@@ -4,16 +4,20 @@
 #ifndef AGV_MOTORCONTROL_H
 #define AGV_MOTORCONTROL_H
 
-//drive robot in a straight line
-void AGV_motorControl_API_straightLine(int speed, int distance);
+//typedefs
+typedef int16_t motorControl_distance_t; //in feet
+typedef char motorControl_speed_t; //in feet per second
+typedef char16_t motorControl_rotation_t; //in degrees
+enum motorControl_LRDirection_t { LEFT = 0, RIGHT = 1 };
+enum motorControl_FBDirection_t { BACKWARD = 0, FORWARD = 1 };
 
-//drive robot in an arc of a certain radius
-void AGV_motorControl_API_turnAtRadius(bool dir, int turnRadius, int speed, int distance);
+//initialization function
+void motorControl_init();
 
 //change robot speed
-void AGV_motorControl_API_speed(int speed);
+void AGV_motorControl_API_setSpeed(motorControl_speed_t speed);
 
-//rotate robot by a certain number of degrees
-void AGV_motorControl_API_turnDegrees(int degrees);
+//change robot turn radius
+void AGV_motorControl_API_setTurnRadius(motorControl_distance_t radius, motorControl_LRDirection_t direction);
 
 #endif
