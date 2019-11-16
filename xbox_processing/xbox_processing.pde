@@ -5,14 +5,15 @@ import org.gamecontrolplus.*;
 import org.gamecontrolplus.gui.*;
 
 Serial arduino; // create serial object
-String serVal; // stores serial from the arduino
-static int centerPrecision = 3;
-static int centerPoint = 128;
+byte serVal[]; // stores serial from the arduino
+static int centerPrecision = 5;
+static int centerPoint = 0;
 
 ControlDevice cont;
 ControlIO control;
 int leftStick;
 int rightStick;
+boolean killSwitch;
 
 void setup() {
   size(360, 200);
@@ -28,13 +29,19 @@ void setup() {
   arduino = new Serial(this, port, 9600);
   
   textSize(28);   
+  //arduino.buffer(4);
+  
 }
 
 void draw() {
+  
   if ( arduino.available() > 0) {  // If data is available,
-  serVal = arduino.readStringUntil('\n');  // read it and store it in serVal
-  } 
+  serVal = arduino.readBytes();  // read it and store it in serVal
+  println("arduino detected\n\r");
   println(serVal);
+  } 
+  else println("arduino not detected\n\r");
+  
   getUserInput();
   
   background((leftStick+255 + rightStick+255)/4,100,255);
@@ -57,4 +64,6 @@ public void getUserInput() {
   if (abs(rightStick - centerPoint) <= centerPrecision) {
     rightStick = centerPoint;
   }
+  //killSwitch = (boolean)map(cont.getSlider("killButton").getValue(), -1, 1, -255, 255);
+  
 }
