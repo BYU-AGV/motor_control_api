@@ -6,20 +6,23 @@
 #define MOTOR_RIGHT false
 
 class motor {
-  private:
+   private:
     // pin declarations
     uint8_t pwm_pin;
     uint8_t ena_pin;
     uint8_t dir_pin;
     bool is_left;
-    
+
     uint16_t speed;
     bool direction;
-    
+
     void write_values();
-  public:
+
+   public:
     motor(uint8_t pwm_pin, uint8_t ena_pin, uint8_t dir_pin, bool is_left);
     void set_speed(uint16_t speed, bool direction);
+    void enable();
+    void disable();
 };
 
-#endif //MOTOR_H
+#endif  // MOTOR_H
