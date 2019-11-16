@@ -12,8 +12,16 @@ motor::motor(uint8_t pwm_pin, uint8_t ena_pin, uint8_t dir_pin, bool is_left) {
     pinMode(dir_pin, OUTPUT);
 }
 
-void motor::set_speed(uint16_t speed, bool direction) {
-    this->speed = speed;
+uint8_t motor::get_speed() { return speed; }
+
+bool motor::get_direction() { return direction; }
+
+void motor::inc_speed() {
+    speed++;
+    write_values();
+}
+
+void motor::set_direction(bool direction) {
     if (is_left) {
         this->direction = !direction;
     } else {
@@ -23,11 +31,30 @@ void motor::set_speed(uint16_t speed, bool direction) {
     write_values();
 }
 
+void motor::dec_speed() {
+    speed--;
+
+    write_values();
+}
+
+void motor::set_speed(uint16_t speed) {
+    this->speed = speed;
+
+    write_values();
+}
+
 void motor::write_values() {
     digitalWrite(dir_pin, direction);
     digitalWrite(pwm_pin, speed);
+    digitalWrite(ena_pin, enabled);
 }
 
-void motor::enable() { digitalWrite(ena_pin, HIGH); }
+void motor::enable() {
+  enabled = true;
+  write_values();
+}
 
-void motor::disable() { digitalWrite(ena_pin, LOW); }
+void motor::disable() {
+  enabled = false;
+  write_values();
+}

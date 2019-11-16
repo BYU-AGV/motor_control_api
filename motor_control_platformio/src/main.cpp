@@ -10,10 +10,11 @@
 #define DIR_1 7
 #define DIR_2 8
 
-#define SERIAL_BUFFER_LENGTH 2
+#define SERIAL_BUFFER_LENGTH 4
 
 uint8_t pwm_val = 0;
-uint8_t target;
+uint8_t left_target;
+uint8_t right_target;
 uint16_t count = 0;
 uint8_t past_pwm_val;
 
@@ -44,21 +45,30 @@ void loop() {
     count++;
     if (count == 100) {
         count = 0;
-        if (target > pwm_val)
-            pwm_val++;
-        else if (target < pwm_val)
-            pwm_val--;
+        if (right_target > motorRight.get_speed())
+            motorRight.inc_speed();
+        else if (right_target < motorRight.get_speed())
+            motorRight.dec_speed();
+        if (left_target > motorLeft.get_speed())
+            motorLeft.inc_speed();
+        else if (left_target < motorLeft.get_speed())
+            motorLeft.dec_speed();
     }
 
     while (Serial.available() > 0) {
         Serial.readBytes(buffer, SERIAL_BUFFER_LENGTH);
-        Serial.println(buffer[0]);
-        target = (uint8_t)buffer[0];
+        Serial.println(buffer);
+        left_target = (uint8_t)buffer[0];
+        motorLeft.set_direction(buffer[1]);
+        right_target = (uint8_t)buffer[2];
+        motorRight.set_direction(buffer[3]);
 
-        if (target > upper) {
-            target = 255;
-        } else if (target < lower) {
-            target = 0;
-        }
+        /*
+                if (target > upper) {
+                    target = 255;
+                } else if (target < lower) {
+                    target = 0;
+                }
+            */
     }
 }
