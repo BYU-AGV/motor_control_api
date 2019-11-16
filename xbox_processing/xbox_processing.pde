@@ -1,3 +1,4 @@
+
 import processing.serial.*;
 import net.java.games.input.*;
 import org.gamecontrolplus.*;
@@ -22,7 +23,7 @@ void setup() {
     System.exit(-1);
   }
   // println(Arduino.list());
-  String port = Serial.list()[0];
+  String port = Serial.list()[1];
   arduino = new Serial(this, port, 9600);
   
   textSize(28);   
@@ -36,7 +37,7 @@ void draw() {
   getUserInput();
   background(thumb,100,255);
   arduino.write((int)thumb);
-  text((int)thumb, 10, 30); 
+  text((int)thumb, 10, 30);
 }
 
 public void getUserInput() {
