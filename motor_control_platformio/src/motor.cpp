@@ -14,11 +14,15 @@ motor::motor(uint8_t pwm_pin, uint8_t ena_pin, uint8_t dir_pin, bool is_left) {
 
 uint8_t motor::get_speed() { return speed; }
 
-bool motor::get_direction() { return direction; }
+bool motor::get_direction() { return is_left ? !direction : direction; }
 
 void motor::inc_speed() {
     speed++;
     write_values();
+}
+
+String motor::toString() {
+    String returnString = (is_left ? "L " : "R ") + String(speed) + ' ' + (direction ? 'F' : 'B');
 }
 
 void motor::set_direction(bool direction) {

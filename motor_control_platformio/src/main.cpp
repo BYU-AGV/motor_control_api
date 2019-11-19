@@ -10,7 +10,12 @@
 #define DIR_1 7
 #define DIR_2 8
 
-#define SERIAL_BUFFER_LENGTH 4
+const byte numChars = 32;
+char receivedChars[numChars];  // an array to store the received data
+
+boolean newData = false;
+
+#define SERIAL_BUFFER_LENGTH 6
 
 uint8_t pwm_val = 0;
 uint8_t left_target;
@@ -21,27 +26,72 @@ uint8_t past_pwm_val;
 uint8_t upper = 240;
 uint8_t lower = 10;
 
+uint8_t position;
+
 String inString = "";
 char buffer[10] = {};
+char filtered[10] = {};
 
-static motor motorRight = motor(PWM_1, ENA_1, DIR_1, MOTOR_RIGHT);
-static motor motorLeft = motor(PWM_2, ENA_2, DIR_2, MOTOR_LEFT);
+static motor motorRight = motor(PWM_1, ENA_1, DIR_1, MOTOR_LEFT);
+static motor motorLeft = motor(PWM_2, ENA_2, DIR_2, MOTOR_RIGHT);
 
 void setup() {
     Serial.begin(BAUD_RATE);
+    while (!Serial)
+        ;  // wait for serial to begin
 
     motorRight.enable();
     motorLeft.enable();
 }
 
-void loop() {
+void recvWithEndMarker() {
+    static byte ndx = 0;
+    char endMarker = '\n';
+    char rc;
 
+    // if (Serial.available() > 0) {
+    while (Serial.available() > 0 && newData == false) {
+        rc = Serial.read();
 
-    if (pwm_val != past_pwm_val) {
-        Serial.println(pwm_val);
-        past_pwm_val = pwm_val;
+        if (rc != endMarker) {
+            receivedChars[ndx] = rc;
+            ndx++;
+            if (ndx >= numChars) {
+                ndx = numChars - 1;
+            }
+        } else {
+            receivedChars[ndx] = '\0';  // terminate the string
+            ndx = 0;
+            newData = true;
+        }
     }
+}
 
+void updateMotors() {
+    char* pch;
+    pch = strtok(receivedChars, " ");
+    pch = strtok(NULL, " ");
+    left_target = atoi(pch);
+    pch = strtok(NULL, " ");
+    motorLeft.set_direction(atoi(pch));
+    pch = strtok(NULL, " ");
+    right_target = atoi(pch);
+    pch = strtok(NULL, " ");
+    motorRight.set_direction(atoi(pch));
+}
+
+void showNewData() {
+    if (newData == true) {
+        if (receivedChars[0] == 'S') {
+            updateMotors();
+            Serial.println(String(motorLeft.get_speed()) + ' ' + String(motorRight.get_speed()));
+            Serial.println(String(motorLeft.get_direction()) + ' ' + String(motorRight.get_direction()));
+        }
+        newData = false;
+    }
+}
+
+void loop() {
     count++;
     if (count == 100) {
         count = 0;
@@ -54,21 +104,6 @@ void loop() {
         else if (left_target < motorLeft.get_speed())
             motorLeft.dec_speed();
     }
-
-    while (Serial.available() > 0) {
-        Serial.readBytes(buffer, SERIAL_BUFFER_LENGTH);
-        Serial.println(buffer);
-        left_target = (uint8_t)buffer[0];
-        motorLeft.set_direction(buffer[1]);
-        right_target = (uint8_t)buffer[2];
-        motorRight.set_direction(buffer[3]);
-
-        /*
-                if (target > upper) {
-                    target = 255;
-                } else if (target < lower) {
-                    target = 0;
-                }
-            */
-    }
+    recvWithEndMarker();
+    showNewData();
 }

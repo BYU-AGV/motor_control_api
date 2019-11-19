@@ -1,0 +1,4 @@
+Robot controller
+rightThrottle	right motor throttle	3	SLIDER	Y Rotation	0	-1.0	0.0
+leftThrottle	left motor throttle	3	SLIDER	Y Axis	0	-1.0	0.0
+killButton	kill button	1	BUTTON	Button 1	0	0.0	0.0

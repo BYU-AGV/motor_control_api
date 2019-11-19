@@ -2,6 +2,7 @@
 #define MOTOR_H
 
 #include <stdint.h>
+#include <Arduino.h>
 #define MOTOR_LEFT true
 #define MOTOR_RIGHT false
 
@@ -30,6 +31,7 @@ class motor {
     void inc_speed();
     void dec_speed();
     void set_direction(bool direction);
+    String toString();
 };
 
 #endif  // MOTOR_H

@@ -5,7 +5,7 @@ import org.gamecontrolplus.*;
 import org.gamecontrolplus.gui.*;
 
 Serial arduino; // create serial object
-byte serVal[]; // stores serial from the arduino
+String recieveString; // stores serial from the arduino
 static int centerPrecision = 2;
 static int centerPoint = 0;
 
@@ -29,8 +29,6 @@ void setup() {
   arduino = new Serial(this, port, 9600);
   delay(1000);
   textSize(28);
-  arduino.buffer(2);
-  //arduino.bufferUntil(-1);
   
 }
 
@@ -41,42 +39,27 @@ void draw() {
   
   byte leftForward = (leftStick >= 0) ? (byte)1 : (byte)0;
   byte rightForward = (rightStick >= 0) ? (byte)1 : (byte)0;
-  byte commArray[] = { (byte)'L', (byte)abs(leftStick), leftForward,
-                      (byte)'R', (byte)abs(rightStick), rightForward };
+  String sendString = "L " + Integer.toString(abs(leftStick)) + ' ' + leftForward + " R " + Integer.toString(abs(rightStick)) + ' ' + rightForward;
   print("Motor info: ");
-  for(int i = 0; i < 6; i++) {
-   print(commArray[i]);
-   print(' ');
-  }
-    
-  println();
-  arduino.write(commArray);
+  println(sendString + '\n');
+  arduino.write(sendString);
+  
   text((int)leftStick, 10, 30);
   text((int)rightStick, 100, 30);
-}
-
-private short bytesToShort(byte a, byte b) {
-    short sh = (short)a;
-    sh <<= 8;
-    short ret = (short)(sh | b);
-    return ret;
 }
 
 void serialEvent(Serial arduino) {
   
   try {
-    serVal = arduino.readBytes();  // read it and store it in serVal
+    recieveString = arduino.readString();  // read it and store it in serVal
     //print("arduino serial: ");
     //println(serVal);
     
-    for (int i = 0; i < 1; i++) {
-      print((bytesToShort((serVal[i]), serVal[i+1])));
-      print(' ');
-    }
-    println();
+    print(recieveString);
+    print("HI");
   }
   catch(RuntimeException e) {
-    //e.printStackTrace();
+    e.printStackTrace();
   }
 }
 
