@@ -2,6 +2,8 @@
 #include <stdint.h>
 #include "motor.h"
 
+#define PRINT // comment this line to disable printing to serial
+
 #define BAUD_RATE 9600
 #define PWM_1 5
 #define PWM_2 6
@@ -67,29 +69,30 @@ void recvWithEndMarker() {
     }
 }
 
+// update the motor state with the new char[] recieved
 void updateMotors() {
-    char* pch;
-    pch = strtok(receivedChars, " ");
-    pch = strtok(NULL, " ");
-    left_target = atoi(pch);
-    pch = strtok(NULL, " ");
-    motorLeft.set_direction(atoi(pch));
-    pch = strtok(NULL, " ");
-    right_target = atoi(pch);
-    pch = strtok(NULL, " ");
-    motorRight.set_direction(atoi(pch));
-}
-
-void showNewData() {
-    if (newData == true) {
-        if (receivedChars[0] == 'S') {
-            updateMotors();
-            Serial.println(String(motorLeft.get_speed()) + ' ' + String(motorRight.get_speed()));
-            Serial.println(String(motorLeft.get_direction()) + ' ' + String(motorRight.get_direction()));
-        }
-        newData = false;
+    if (receivedChars[0] == 'S') {
+        char* pch;
+        pch = strtok(receivedChars, " ");
+        pch = strtok(NULL, " ");
+        left_target = atoi(pch);
+        pch = strtok(NULL, " ");
+        motorLeft.set_direction(atoi(pch));
+        pch = strtok(NULL, " ");
+        right_target = atoi(pch);
+        pch = strtok(NULL, " ");
+        motorRight.set_direction(atoi(pch));
     }
 }
+
+#ifdef PRINT
+void printNewData() {
+    Serial.println(String(motorLeft.get_speed()) + ' ' +
+                   String(motorRight.get_speed()));
+    Serial.println(String(motorLeft.get_direction()) + ' ' +
+                   String(motorRight.get_direction()));
+}
+#endif
 
 void loop() {
     count++;
@@ -105,5 +108,11 @@ void loop() {
             motorLeft.dec_speed();
     }
     recvWithEndMarker();
-    showNewData();
+    if (newData) {
+        updateMotors();
+        newData = false;
+        #ifdef PRINT
+        printNewData();
+        #endif
+    }
 }
