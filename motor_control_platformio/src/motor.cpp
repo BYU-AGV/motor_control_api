@@ -8,9 +8,15 @@ motor::motor(uint8_t pwm_pin, uint8_t ena_pin, uint8_t dir_pin, bool is_left) {
     this->dir_pin = dir_pin;
     this->is_left = is_left;
 
+    // set pin modes
     pinMode(pwm_pin, OUTPUT);
     pinMode(ena_pin, OUTPUT);
     pinMode(dir_pin, OUTPUT);
+
+    // initialize private variables
+    speed = 0;
+    direction = MOTOR_FORWARDS;
+    enabled = false;
 }
 
 // Returns the current motor speed (pwm val)
@@ -22,7 +28,7 @@ bool motor::get_direction() { return is_left ? !direction : direction; }
 // Set the direction of the motor
 void motor::set_direction(bool direction) {
     this->direction = is_left ? !direction : direction;
-    write_values();
+    write_dir();
 }
 
 // Decrement the motor speed by 1

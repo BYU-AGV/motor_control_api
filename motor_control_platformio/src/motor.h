@@ -10,6 +10,12 @@
 #define MOTOR_BACKWARDS false // pass this to direction for backwards
 
 // Class representing a motor
+//
+// To initialize a motor:
+// 1) Instantiate a motor object with the correct pins and orientation
+// 2) Set speed and direction parameters (or leave them at the default of speed=0 and direction=forwards)
+// 3) Call motor::enable();
+// From there, use motor::inc_speed(), dec_speed(), set_speed, and set_direction to control the motor.
 class motor {
    public:
     motor(uint8_t pwm_pin, uint8_t ena_pin, uint8_t dir_pin, bool is_left); // constructor
