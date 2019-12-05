@@ -8,10 +8,10 @@ motorController::motorController(motor leftMotor, motor rightMotor, smPeriod) :
 			leftMotor(leftMotor), rightMotor(rightMotor),
 			smPeriod(smPeriod),
 			targetSpeed(0),
+			targetDistance(0),
 			FBDir(FORWARD),
 			LRDir(RIGHT),
-			isAvailable(true),
-			distTraveled(0)
+			isAvailable(true)
 {
 	
 }

@@ -3,8 +3,9 @@
 
 #ifndef MOTORCONTROLLER_H
 #define MOTORCONTROLLER_H
+
 #include <stdint.h>
-#include "motor.h"
+#include "../motor_control_platformio/src/motor.h"
 #include "encoder.h"
 
 //typedefs
@@ -83,7 +84,3 @@ private:
 	bool gameControllerFlag;	//indicates if game controller is being used
 };
 #endif
-
-
-
-
