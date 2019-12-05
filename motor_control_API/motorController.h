@@ -29,6 +29,7 @@ class motorController
 	motorController(motor leftMotor, motor rightMotor, uint16_t smPeriod);	//constructor
 	~motorController();	//destructor
 	const uint16_t smPeriod;	//state machine period
+	
 	//motion functions
 	void straightLine(mc_speed_t speed, mc_distance_t distance);
 	void turnAtRadius(mc_LRDir_t direction, mc_distance_t turnRadius, mc_speed_t speed, mc_distance_t distance);
@@ -52,9 +53,11 @@ class motorController
 	mc_speed_t targetSpeed;	//used to maintain correct speed
 	mc_distance_t targetDistance;	//used to control run time
 	
+	//directions
 	mc_FBDir_t FBDir;
 	mc_LRDir_t LRDir;
 	
+	//state machine variables
 	motorController_st_t currState, prevState;
 	bool isAvailable;
 }

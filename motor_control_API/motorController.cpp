@@ -5,7 +5,6 @@
 
 //constructor
 motorController::motorController(motor leftMotor, motor rightMotor, smPeriod) :
-		{
 			leftMotor(leftMotor), rightMotor(rightMotor),
 			smPeriod(smPeriod),
 			targetSpeed(0),
@@ -13,7 +12,6 @@ motorController::motorController(motor leftMotor, motor rightMotor, smPeriod) :
 			LRDir(RIGHT),
 			isAvailable(true),
 			distTraveled(0)
-		}
 {
 	
 }
