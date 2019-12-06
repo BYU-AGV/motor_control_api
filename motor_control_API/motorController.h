@@ -5,8 +5,8 @@
 #define MOTORCONTROLLER_H
 
 #include <stdint.h>
-#include "../motor_control_platformio/src/motor.h"
-#include "encoder.h"
+#include "motor.h"	//path to motor.h
+#include "encoder.h"		//path to encoders.h
 
 //typedefs
 typedef int16_t mc_distance_t; //in feet
@@ -20,7 +20,7 @@ typedef enum
 {
 	init_st,					//entry point
 	getInstruction_st,			//wait for instructions from i2c
-	executingInstruction_st,	//executes recieved instructions
+	executingInstruction_st,	//executes received instructions
 	gameController_st,			//used for controlling robot with game controller
 	
 }motorController_st_t;
@@ -48,8 +48,8 @@ public:
 	void turnInPlace(mc_LRDir_t direction, mc_rotation_t degrees);
 
 	bool isAvailable();		//returns availability of motor controller
-/*FIXME make getInst?*/	void instRecieved();	//sets instruction recieved flag
-	void stopGameController();	//sets gameController flag
+	instruction_e getInstruction();	//gets instruction from i2c, sets instruction received flag
+	void stopGameController();	//lowers gameController flag
 	void tick();	//standard tick function
 	instruction_e nextInstruction;	//instruction to be executed
 	
@@ -65,22 +65,24 @@ private:
 	mc_distance_t getLeftDistance();
 	mc_distance_t getRightDistance();
 	
+	void updateMotors();
 	void speedCheck();	//checks if speed needs to be adjusted
 	void distCheck();	//checks if target distance has been accomplished
 	
 	//targets used for checking in execution state
-	mc_speed_t targetSpeed;		//used to maintain correct speed
+	mc_speed_t leftTargetSpeed,		//used to maintain correct speed
+			   rightTargetSpeed;		//used to maintain correct speed
 	mc_distance_t targetDistance;	//used to control run time
 	
 	//directions
-	mc_FBDir_t FBDir;
-	mc_LRDir_t LRDir;
+	mc_FBDir_t leftDir, rightDir;
+	mc_LRDir_t turnDir;
 	
 	//state machine variables/flags
 	motorController_st_t currState, prevState;
 	bool isAvailable;
 	bool instComplete;
-	bool instRecievedFlag;	//indicates if an instruction has been recieved
+	bool instRecievedFlag;	//indicates if an instruction has been received
 	bool gameControllerFlag;	//indicates if game controller is being used
 };
 #endif
