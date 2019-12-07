@@ -8,6 +8,8 @@
 #include "motor.h"	//path to motor.h
 #include "encoder.h"		//path to encoders.h
 
+#define MC_SLAVE_ADDRESS 0x00
+
 //typedefs
 typedef int16_t mc_distance_t; //in feet
 typedef uint8_t mc_speed_t; //in feet per second
@@ -25,13 +27,18 @@ typedef enum
 	
 }motorController_st_t;
 
-//available instructions
-enum 
+//available instructions (Should do a type with instruction string, parse within)
+typedef struct
 {
-	straightLine_inst,
-	turnRad_inst,
-	turnInPlace_inst,
-	gameControl_inst
+	
+} instruction_t;
+
+enum
+{
+	straightLine_inst = 0,
+	turnRad_inst = 1,
+	turnInPlace_inst = 2,
+	gameControl_inst = 3
 }instruction_e;
 
 class motorController
@@ -48,10 +55,9 @@ public:
 	void turnInPlace(mc_LRDir_t direction, mc_rotation_t degrees);
 
 	bool isAvailable();		//returns availability of motor controller
-	instruction_e getInstruction();	//gets instruction from i2c, sets instruction received flag
+	void getInstruction(instruction_t instructionStr);	//gets instruction from i2c, sets instruction received flag
 	void stopGameController();	//lowers gameController flag
 	void tick();	//standard tick function
-	instruction_e nextInstruction;	//instruction to be executed
 	
 private:
 	//motors
@@ -74,6 +80,18 @@ private:
 			   rightTargetSpeed;		//used to maintain correct speed
 	mc_distance_t targetDistance;	//used to control run time
 	
+	//comm channels
+	SERCOM I2CSlave(SERCOM0);	//for receiving instructions
+	SERCOM I2CMaster(SERCOM1);	//for communication with encoders
+	USBDevice gameController;
+	
+	//instruction data
+	mc_speed_t instSpeed;
+	mc_distance_t instDistance;
+	mc_distance_t instRadius;
+	mc_FBDir_t instFBDir;
+	mc_LRDir_t instLRDir;
+	
 	//directions
 	mc_FBDir_t leftDir, rightDir;
 	mc_LRDir_t turnDir;
@@ -84,5 +102,6 @@ private:
 	bool instComplete;
 	bool instRecievedFlag;	//indicates if an instruction has been received
 	bool gameControllerFlag;	//indicates if game controller is being used
+	instruction_t nextInstruction;	//instruction to be executed
 };
 #endif

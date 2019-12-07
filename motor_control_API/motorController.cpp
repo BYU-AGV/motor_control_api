@@ -2,22 +2,33 @@
 #include <math.h>
 
 #define SM_DEBUG_ON 1	//used to turn debug statements on/off
+
+#define BAUD_RATE 9600
+
 #define MAX_SPEED_FPS 7.333	//5 mph
-#define avg(a, b) ((a + b) / 2)
+
+#define INSTRUCTION_FUNC_MASK
+#define INSTRUCTION_SPEED_MASK
+#define INSTRUCTION_DIST_MASK
+#define INSTRUCTION_RADIUS_MASK
+#define INSTRUCTION_FB_DIR_MASK
+#define INSTRUCTION_LR_DIR_MASK
 
 //robot dimensions
 #define ROBOT_TRACK_WIDTH_IN		//distance from center of one wheel to the other in inches
 #define WHEEL_DIAMETER_IN 14		//diameter of the wheels in inches
 
-//factor to use to convert feet per second to PWM value
-#define PWM_FACTOR
+//scaling factor to use to convert feet per second to PWM value
+#define PWM_FACTOR (255 / MAX_SPEED_FPS)
+
+//macro for averaging
+#define avg(a, b) ((a + b) / 2)
 
 //macro to convert real speed in feet per second to PWM value
 #define FPStoPWM(speedIn) (speedIn * PWM_FACTOR)
 
 //macro to do the math to convert
 #define velCalc(speedIn, radiusIn) (2 * M_PI * speedIn * radiusIn)
-
 
 //constructor
 motorController::motorController(motor leftMotor, motor rightMotor, smPeriod) :
@@ -31,12 +42,27 @@ motorController::motorController(motor leftMotor, motor rightMotor, smPeriod) :
 			turnDir(RIGHT),
 			isAvailable(true)
 {
+	//setup
 	
+	//init sercom slave for instructions from main controller
+	I2CSlave.initSlaveWIRE(MC_SLAVE_ADDRESS);
+	
+
+	//init master i2c for communication with encoders
+	I2CMaster.initMasterWIRE(BAUD_RATE);
+	
+	
+	//game controller for direct control
+	gameController.init();
+	
+	/*
+	uint8_t currInstruction = I2CSlave.readDataWIRE();
+	I2CMaster.sendDataMasterWIRE(NEED_SPEED_INST);
+	*/
 }
 
 //destructor
-motorController::~motorController()
-{}
+motorController::~motorController() {}
 
 void motorController::updateMotors()
 {
@@ -55,7 +81,8 @@ void motorController::straightLine(mc_speed_t speed, mc_distance_t distance, mc_
 	leftTargetSpeed = speed;
 	rightTargetSpeed = speed;
 	targetDistance = distance;
-	leftDir = (rightDir = direction);
+	leftDir = direction;
+	rightDir = direction;
 	
 	updateMotors();
 }
@@ -92,7 +119,31 @@ inline bool motorController::isAvailable() { return isAvailable; }
 //sets instruction received flag
 void motorController::getInstruction()
 {
-	
+	uint8_t instructionStr = I2CSlave.readDataWIRE();
+	instruction_e funcCall = instructionStr & INSTRUCTION_FUNC_MASK;
+	switch(funcCall)
+	{
+		case straightLine_inst:
+		{
+			instSpeed = (instructionStr & INSTRUCTION_SPEED_MASK);
+			instDistance = (instructionStr & INSTRUCTION_DIST_MASK);
+			instFBDir = (instructionStr & INSTRUCTION_FB_DIR_MASK);			
+		}
+		break;
+		case turnRad_inst:
+		{
+			instSpeed = (instructionStr & INSTRUCTION_SPEED_MASK);
+			instDistance = (instructionStr & INSTRUCTION_DIST_MASK);
+			instRadius = (instructionStr & INSTRUCTION_RADIUS_MASK);
+			instFBDir = (instructionStr & INSTRUCTION_FB_DIR_MASK);
+			instLRDir = (instructionStr & INSTRUCTION_LR_DIR_MASK);
+		}
+		break;
+		case turnInPlace_inst:
+		break;
+		case gameControl_inst:
+		break;
+	}
 	instRecievedFlag = true;
 }
 
