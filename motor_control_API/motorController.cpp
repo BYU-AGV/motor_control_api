@@ -4,15 +4,7 @@
 #define SM_DEBUG_ON 1	//used to turn debug statements on/off
 
 #define BAUD_RATE 9600
-
 #define MAX_SPEED_FPS 7.333	//5 mph
-
-#define INSTRUCTION_FUNC_MASK
-#define INSTRUCTION_SPEED_MASK
-#define INSTRUCTION_DIST_MASK
-#define INSTRUCTION_RADIUS_MASK
-#define INSTRUCTION_FB_DIR_MASK
-#define INSTRUCTION_LR_DIR_MASK
 
 //robot dimensions
 #define ROBOT_TRACK_WIDTH_IN		//distance from center of one wheel to the other in inches
@@ -27,7 +19,7 @@
 //macro to convert real speed in feet per second to PWM value
 #define FPStoPWM(speedIn) (speedIn * PWM_FACTOR)
 
-//macro to do the math to convert
+//macro to do the math to determine speed of inside/outside wheels while turning
 #define velCalc(speedIn, radiusIn) (2 * M_PI * speedIn * radiusIn)
 
 //constructor
@@ -45,20 +37,15 @@ motorController::motorController(motor leftMotor, motor rightMotor, smPeriod) :
 	//setup
 	
 	//init sercom slave for instructions from main controller
+	SERCOM I2CSlave(SERCOM0);
 	I2CSlave.initSlaveWIRE(MC_SLAVE_ADDRESS);
-	
 
 	//init master i2c for communication with encoders
+	SERCOM I2CMaster(SERCOM1);
 	I2CMaster.initMasterWIRE(BAUD_RATE);
 	
-	
-	//game controller for direct control
+	//game controller for direct control of robot
 	gameController.init();
-	
-	/*
-	uint8_t currInstruction = I2CSlave.readDataWIRE();
-	I2CMaster.sendDataMasterWIRE(NEED_SPEED_INST);
-	*/
 }
 
 //destructor
@@ -78,6 +65,7 @@ void motorController::updateMotors()
 //drive robot in a straight line for a certain distance
 void motorController::straightLine(mc_speed_t speed, mc_distance_t distance, mc_FBDir_t direction)
 {
+	//basic. Sets speeds and direction, updates motors
 	leftTargetSpeed = speed;
 	rightTargetSpeed = speed;
 	targetDistance = distance;
@@ -92,11 +80,13 @@ void motorController::straightLine(mc_speed_t speed, mc_distance_t distance, mc_
 void motorController::turnAtRadius(mc_LRDir_t LRdir, mc_FBDir_t FBdir,
 		mc_distance_t turnRadius, mc_speed_t speed, mc_distance_t distance)
 {
+	//basic. calculates inside and outside target speeds, updates motors depending on turn direction
 	turnDir = LRdir;
-	leftDir = (rightDir = FBdir);
+	leftDir = FBdir
+	rightDir = FBdir;
 	
-	mc_speed_t insideTargetSpeed = velCalc(speed, turnRadius - WHEEL_DIAMETER_IN/2),
-				outsideTargetSpeed = velCalc(speed, turnRadius + WHEEL_DIAMETER_IN/2);
+	mc_speed_t insideTargetSpeed = velCalc(speed, turnRadius - ROBOT_TRACK_WIDTH_IN/2),
+				outsideTargetSpeed = velCalc(speed, turnRadius + ROBOT_TRACK_WIDTH_IN/2);
 				
 	leftTargetSpeed = (LRdir == LEFT) ? insideTargetSpeed : outsideTargetSpeed;
 	rightTargetSpeed = (LRdir == LEFT) ? outsideTargetSpeed : insideTargetSpeed;
@@ -119,35 +109,12 @@ inline bool motorController::isAvailable() { return isAvailable; }
 //sets instruction received flag
 void motorController::getInstruction()
 {
-	uint8_t instructionStr = I2CSlave.readDataWIRE();
-	instruction_e funcCall = instructionStr & INSTRUCTION_FUNC_MASK;
-	switch(funcCall)
-	{
-		case straightLine_inst:
-		{
-			instSpeed = (instructionStr & INSTRUCTION_SPEED_MASK);
-			instDistance = (instructionStr & INSTRUCTION_DIST_MASK);
-			instFBDir = (instructionStr & INSTRUCTION_FB_DIR_MASK);			
-		}
-		break;
-		case turnRad_inst:
-		{
-			instSpeed = (instructionStr & INSTRUCTION_SPEED_MASK);
-			instDistance = (instructionStr & INSTRUCTION_DIST_MASK);
-			instRadius = (instructionStr & INSTRUCTION_RADIUS_MASK);
-			instFBDir = (instructionStr & INSTRUCTION_FB_DIR_MASK);
-			instLRDir = (instructionStr & INSTRUCTION_LR_DIR_MASK);
-		}
-		break;
-		case turnInPlace_inst:
-		break;
-		case gameControl_inst:
-		break;
-	}
+	nextInstruction = I2CSlave.readDataWIRE();		//FIXME - needs implementation
+	
 	instRecievedFlag = true;
 }
 
-//lowers gameController flag
+//lowers gameController flag (after exit button is pressed on controller)
 inline void motorController::stopGameController() { gameControllerFlag = false; }
 
 //Gets actual left motor speed from encoders
@@ -160,15 +127,12 @@ mc_speed_t motorController::getRightSpeed()
 {
 }
 
-//verifies that current speed matches desired speed, adjusts if necessary (PID)
+//verifies that current speed matches desired speed, adjusts if necessary (PI controller)
 void motorController::speedCheck()
 {
-	if(leftTargetSpeed != getLeftSpeed() ||
-	   rightTargetSpeed != getRightSpeed())
-	{
-		
-	}
+
 }
+
 //get distance left wheel has traveled from encoders
 mc_distance_t motorController::getLeftDistance()
 {
@@ -182,10 +146,6 @@ mc_distance_t motorController::getRightDistance()
 //checks if robot has traversed target distance, sets instruction completed flag
 inline void motorController::distCheck()
 {
-	if(avg(getLeftDistance(), getRightDistance()) >= targetDistance)
-	{
-		instComplete = true;
-	}
 }
 
 //helper function to stop robot
@@ -200,7 +160,7 @@ void motorController::stopRobot()
 //standard state machine tick function
 void motorController::tick()
 {
-	//debug SM
+	//State machine debugger
 	if(SM_DEBUG_ON)
 	{
 		switch(currState)
@@ -258,29 +218,7 @@ void motorController::tick()
 		{
 			if(instRecievedFlag)
 			{
-				switch(nextInstruction)
-				{
-					case straightLine_inst:
-					{
-						currState = executingInstruction_st;
-					}
-					break;
-					case turnRad_inst:
-					{
-						currState = executingInstruction_st;
-					}
-					break;
-					case turnInPlace_inst:
-					{
-						currState = executingInstruction_st;
-					}
-					break;
-					case gameControl_inst:
-					{
-						currState = gameController_st;
-					}
-					break;
-				}
+									//FIXME - Needs implementation
 			}
 		}
 		break;
@@ -318,6 +256,7 @@ void motorController::tick()
 		break;
 		case executingInstruction_st:
 		{
+			//continuous PI checking
 			distCheck(); 
 			speedCheck();
 		}
