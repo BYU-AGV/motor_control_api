@@ -10,12 +10,12 @@ Byte 1:
 		 01 - arc distance
 		 10 - in-place turn
 		 11 - {empty}
-	[c] = direction (bool, 0-1)
+	[c] = direction (binary, 0-1)
 		  0 - backward
 		  1 - forward
 	[defgh] = speed (relative, 0-31)
 		  0 - 0
-		 31 - pos max
+		 31 - speed max
 
 Byte 2:
 	[i][j][k][l][m][n][o][p]
