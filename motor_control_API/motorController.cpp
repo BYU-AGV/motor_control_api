@@ -7,7 +7,7 @@
 #define MAX_SPEED_FPS 7.333	//5 mph
 
 //robot dimensions
-#define ROBOT_TRACK_WIDTH_IN		//distance from center of one wheel to the other in inches
+#define ROBOT_TRACK_WIDTH_IN 36		//distance from center of one wheel to the other in inches
 #define WHEEL_DIAMETER_IN 14		//diameter of the wheels in inches
 
 //scaling factor to use to convert feet per second to PWM value
@@ -23,7 +23,7 @@
 #define velCalc(speedIn, radiusIn) (2 * M_PI * speedIn * radiusIn)
 
 //constructor
-motorController::motorController(motor leftMotor, motor rightMotor, smPeriod) :
+motorController::motorController(motor leftMotor, motor rightMotor, uint16_t smPeriod) :
 			leftMotor(leftMotor), rightMotor(rightMotor),
 			smPeriod(smPeriod),
 			leftTargetSpeed(0),
@@ -32,7 +32,7 @@ motorController::motorController(motor leftMotor, motor rightMotor, smPeriod) :
 			rightDir(FORWARD),
 			targetDistance(0),
 			turnDir(RIGHT),
-			isAvailable(true)
+			available(true)
 {
 	//setup
 	
@@ -45,7 +45,7 @@ motorController::motorController(motor leftMotor, motor rightMotor, smPeriod) :
 	I2CMaster.initMasterWIRE(BAUD_RATE);
 	
 	//game controller for direct control of robot
-	gameController.init();
+	//gameController.init();
 }
 
 //destructor
@@ -82,11 +82,11 @@ void motorController::turnAtRadius(mc_LRDir_t LRdir, mc_FBDir_t FBdir,
 {
 	//basic. calculates inside and outside target speeds, updates motors depending on turn direction
 	turnDir = LRdir;
-	leftDir = FBdir
+	leftDir = FBdir;
 	rightDir = FBdir;
 	
-	mc_speed_t insideTargetSpeed = velCalc(speed, turnRadius - ROBOT_TRACK_WIDTH_IN/2),
-				outsideTargetSpeed = velCalc(speed, turnRadius + ROBOT_TRACK_WIDTH_IN/2);
+	mc_speed_t insideTargetSpeed = velCalc(speed, turnRadius - ROBOT_TRACK_WIDTH_IN/2);
+	mc_speed_t outsideTargetSpeed = velCalc(speed, turnRadius + ROBOT_TRACK_WIDTH_IN/2);
 				
 	leftTargetSpeed = (LRdir == LEFT) ? insideTargetSpeed : outsideTargetSpeed;
 	rightTargetSpeed = (LRdir == LEFT) ? outsideTargetSpeed : insideTargetSpeed;
@@ -104,12 +104,12 @@ void motorController::turnInPlace(mc_LRDir_t direction, mc_rotation_t degrees)
 }
 
 //used to find if robot is executing a control. If false, robot is free for a command
-inline bool motorController::isAvailable() { return isAvailable; }
+inline bool motorController::isAvailable() { return available; }
 
 //sets instruction received flag
 void motorController::getInstruction()
 {
-	nextInstruction = I2CSlave.readDataWIRE();		//FIXME - needs implementation
+	//nextInstruction = (instruction_t) I2CSlave.readDataWIRE();		//FIXME - needs implementation
 	
 	instRecievedFlag = true;
 }
@@ -211,7 +211,7 @@ void motorController::tick()
 		{
 			currState = getInstruction_st;
 			instRecievedFlag = false;
-			isAvailable = true;
+			available = true;
 		}
 		break;
 		case getInstruction_st:
@@ -228,7 +228,7 @@ void motorController::tick()
 			{
 				stopRobot();
 				currState = getInstruction_st;
-				isAvailable = true;
+				available = true;
 				instRecievedFlag = false;
 				instComplete = false;
 			}
@@ -239,7 +239,7 @@ void motorController::tick()
 			if(!gameControllerFlag)
 			{
 				currState = getInstruction_st;
-				isAvailable = true;
+				available = true;
 				instRecievedFlag = false;
 			}
 		}

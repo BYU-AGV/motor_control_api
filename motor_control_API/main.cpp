@@ -8,10 +8,10 @@
 #include <Arduino.h>
 #include <stdio.h>
 #include <stdint.h>
-#include "sam.h"
 #include "motorController.h"
 #include "motor.h"
 
+//H-bridge pins
 #define PWM_1 5
 #define PWM_2 6
 #define ENA_1 12
@@ -19,6 +19,7 @@
 #define DIR_1 7
 #define DIR_2 8
 
+//instructions
 #define NEED_SPEED_INST 0x12
 
 void initialize()

@@ -5,8 +5,9 @@
 #define MOTORCONTROLLER_H
 
 #include <stdint.h>
+#include <Arduino.h>
 #include "motor.h"	//path to motor.h
-#include "encoder.h"		//path to encoders.h
+//#include "encoder.h"		//path to encoders.h
 
 #define MC_SLAVE_ADDRESS 0x00
 
@@ -78,15 +79,15 @@ private:
 	mc_LRDir_t turnDir;
 		
 	//comm channels
-	SERCOM I2CSlave;	//for receiving instructions from main board
-	SERCOM I2CMaster;	//for communication with encoders
-	USBDevice gameController;	//used for controlling robot with game controller
+	SERCOM I2CSlave();	//for receiving instructions from main board
+	SERCOM I2CMaster();	//for communication with encoders
+	USBDeviceClass gameController;	//used for controlling robot with game controller
 	instruction_t nextInstruction;	//instruction to be executed
 	
 	//state machine variables/flags
 	motorController_st_t currState, prevState;
 
-	bool isAvailable;	//availability flag
+	bool available;	//availability flag
 	bool instComplete;	//instruction complete flag
 	bool instRecievedFlag;	//indicates if an instruction has been received
 	bool gameControllerFlag;	//indicates if game controller is being used for control
