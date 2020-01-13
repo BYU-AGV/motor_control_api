@@ -27,12 +27,6 @@ typedef enum
 	
 }motorController_st_t;
 
-//available instructions (Should do a type with instruction string, parse within)
-typedef struct
-{
-	
-} instruction_t;
-
 enum
 {
 	straightLine_inst = 0,
@@ -40,6 +34,19 @@ enum
 	turnInPlace_inst = 2,
 	gameControl_inst = 3
 }instruction_e;
+
+//available instructions (Should do a type with instruction string, parse within)
+typedef struct
+{
+	//instruction data
+	instruction_e funcCall;
+	mc_speed_t instSpeed;
+	mc_distance_t instDistance;
+	mc_distance_t instRadius;
+	mc_FBDir_t instFBDir;
+	mc_LRDir_t instLRDir;
+	mc_rotation_t instDegrees;
+} instruction_t;
 
 class motorController
 {
@@ -85,20 +92,13 @@ private:
 	SERCOM I2CMaster(SERCOM1);	//for communication with encoders
 	USBDevice gameController;
 	
-	//instruction data
-	mc_speed_t instSpeed;
-	mc_distance_t instDistance;
-	mc_distance_t instRadius;
-	mc_FBDir_t instFBDir;
-	mc_LRDir_t instLRDir;
-	
 	//directions
 	mc_FBDir_t leftDir, rightDir;
 	mc_LRDir_t turnDir;
 	
 	//state machine variables/flags
 	motorController_st_t currState, prevState;
-	bool isAvailable;
+	bool available;
 	bool instComplete;
 	bool instRecievedFlag;	//indicates if an instruction has been received
 	bool gameControllerFlag;	//indicates if game controller is being used

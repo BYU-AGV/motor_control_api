@@ -7,12 +7,27 @@
 
 #define MAX_SPEED_FPS 7.333	//5 mph
 
-#define INSTRUCTION_FUNC_MASK
-#define INSTRUCTION_SPEED_MASK
-#define INSTRUCTION_DIST_MASK
-#define INSTRUCTION_RADIUS_MASK
-#define INSTRUCTION_FB_DIR_MASK
-#define INSTRUCTION_LR_DIR_MASK
+//instruction shift
+#define INSTRUCTION_GET_SHIFT 8
+//1st bit masks
+#define INSTRUCTION_FUNC_MASK	0xC000
+#define INSTRUCTION_FB_DIR_MASK	0x2000
+#define INSTRUCTION_SPEED_MASK	0x1F00
+//1st bit shifts
+#define INSTRUCTION_FUNC_SHIFT 14
+#define INSTRUCTION_DIR_SHIFT 13
+#define INSTRUCTION_SPEED_SHIFT 8
+
+//2nd bit masks
+#define INSTRUCTION_STRAIGHT_DIST_MASK	0x00FF
+#define INSTRUCTION_ARC_DIST_MASK	0x00F0
+#define INSTRUCTION_ARC_RADIUS_MASK	0x000F
+#define INSTRUCTION_IN_PLACE_DEG_MASK 0x00FF
+//2nd byte shifts
+#define INSTRUCTION_STRAIGHT_DIST_SHIFT 0
+#define INSTRUCTION_ARC_DIST_SHIFT 4
+#define INSTRUCTION_ARC_RADIUS_SHIFT 0
+#define INSTRUCTION_IN_PLACE_DEG_SHIFT 0
 
 //robot dimensions
 #define ROBOT_TRACK_WIDTH_IN		//distance from center of one wheel to the other in inches
@@ -30,6 +45,9 @@
 //macro to do the math to convert
 #define velCalc(speedIn, radiusIn) (2 * M_PI * speedIn * radiusIn)
 
+//macro to convert from 255 instruction to 360 degree value
+#define instToDeg(instVal) (instVal * 360 / 255)
+
 //constructor
 motorController::motorController(motor leftMotor, motor rightMotor, smPeriod) :
 			leftMotor(leftMotor), rightMotor(rightMotor),
@@ -46,6 +64,8 @@ motorController::motorController(motor leftMotor, motor rightMotor, smPeriod) :
 	
 	//init sercom slave for instructions from main controller
 	I2CSlave.initSlaveWIRE(MC_SLAVE_ADDRESS);
+	I2CSlave.prepareAckBitWIRE();
+	SERCOM0.I2CS.CTRLB.bit.SMEN = 1;	//set smart mode, auto ACK on reading of DATA
 	
 
 	//init master i2c for communication with encoders
@@ -59,6 +79,7 @@ motorController::motorController(motor leftMotor, motor rightMotor, smPeriod) :
 	uint8_t currInstruction = I2CSlave.readDataWIRE();
 	I2CMaster.sendDataMasterWIRE(NEED_SPEED_INST);
 	*/
+	
 }
 
 //destructor
@@ -119,32 +140,44 @@ inline bool motorController::isAvailable() { return isAvailable; }
 //sets instruction received flag
 void motorController::getInstruction()
 {
-	uint8_t instructionStr = I2CSlave.readDataWIRE();
-	instruction_e funcCall = instructionStr & INSTRUCTION_FUNC_MASK;
-	switch(funcCall)
+	if(I2CSlave.isDataReadyWIRE())
 	{
-		case straightLine_inst:
+		//get 2 bytes
+		uint16_t instructionStr = (I2CSlave.readDataWIRE() << INSTRUCTION_GET_SHIFT)
+								+ (I2CSlave.readDataWIRE());
+		//parse first byte for function call, direction, and speed
+		nextInstruction.funcCall = (instructionStr & INSTRUCTION_FUNC_MASK) >> INSTRUCTION_FUNC_SHIFT;
+		nextInstruction.instFBDir = (instructionStr & INSTRUCTION_FB_DIR_MASK) >> INSTRUCTION_DIR_SHIFT;
+		nextInstruction.instSpeed = (instructionStr & INSTRUCTION_SPEED_MASK) >> INSTRUCTION_SPEED_SHIFT;
+		
+		//parse second byte based on function
+		switch(nextInstruction.funcCall)
 		{
-			instSpeed = (instructionStr & INSTRUCTION_SPEED_MASK);
-			instDistance = (instructionStr & INSTRUCTION_DIST_MASK);
-			instFBDir = (instructionStr & INSTRUCTION_FB_DIR_MASK);			
+			case straightLine_inst:
+			{
+				nextInstruction.instDistance =
+					(instructionStr & INSTRUCTION_STRAIGHT_DIST_MASK) >> INSTRUCTION_STRAIGHT_DIST_SHIFT;
+			}
+			break;
+			case turnRad_inst:
+			{
+				nextInstruction.instDistance =
+					(instructionStr & INSTRUCTION_ARC_DIST_MASK) >> INSTRUCTION_ARC_DIST_SHIFT;
+				nextInstruction.instRadius =
+					(instructionStr & INSTRUCTION_ARC_RADIUS_MASK) >> INSTRUCTION_ARC_RADIUS_SHIFT;
+			}
+			break;
+			case turnInPlace_inst:
+			{
+				nextInstruction.instDegrees =
+					instToDeg((instructionStr & INSTRUCTION_IN_PLACE_DEG_MASK) >> INSTRUCTION_IN_PLACE_DEG_SHIFT);
+			}
+			break;
+			case gameControl_inst:
+			break;
 		}
-		break;
-		case turnRad_inst:
-		{
-			instSpeed = (instructionStr & INSTRUCTION_SPEED_MASK);
-			instDistance = (instructionStr & INSTRUCTION_DIST_MASK);
-			instRadius = (instructionStr & INSTRUCTION_RADIUS_MASK);
-			instFBDir = (instructionStr & INSTRUCTION_FB_DIR_MASK);
-			instLRDir = (instructionStr & INSTRUCTION_LR_DIR_MASK);
-		}
-		break;
-		case turnInPlace_inst:
-		break;
-		case gameControl_inst:
-		break;
+		instRecievedFlag = true;
 	}
-	instRecievedFlag = true;
 }
 
 //lowers gameController flag
@@ -153,11 +186,15 @@ inline void motorController::stopGameController() { gameControllerFlag = false; 
 //Gets actual left motor speed from encoders
 mc_speed_t motorController::getLeftSpeed()
 {
+	//placeholder until encoders are ready
+	return leftTargetSpeed;
 }
 
 //Gets actual right motor speed from encoders
 mc_speed_t motorController::getRightSpeed()
 {
+	//placeholder until encoders are ready
+	return rightTargetSpeed;
 }
 
 //verifies that current speed matches desired speed, adjusts if necessary (PID)
@@ -172,11 +209,17 @@ void motorController::speedCheck()
 //get distance left wheel has traveled from encoders
 mc_distance_t motorController::getLeftDistance()
 {
+	//placeholder until encoders are ready
+	targetDistance--;
+	return 0;
 }
 
 //get distance right wheel has traveled from encoders
 mc_distance_t motorController::getRightDistance()
 {
+	//placeholder until encoders are ready
+	targetDistance--;
+	return 0;
 }
 
 //checks if robot has traversed target distance, sets instruction completed flag
@@ -251,28 +294,44 @@ void motorController::tick()
 		{
 			currState = getInstruction_st;
 			instRecievedFlag = false;
-			isAvailable = true;
+			available = true;
 		}
 		break;
 		case getInstruction_st:
 		{
 			if(instRecievedFlag)
 			{
-				switch(nextInstruction)
+				switch(nextInstruction.funcCall)
 				{
 					case straightLine_inst:
 					{
-						currState = executingInstruction_st;
+						currState = executingInstruction_st;	//advance state
+						//call straight line function
+						straightLine(nextInstruction.instSpeed,
+									 nextInstruction.instDistance,
+									 nextInstruction.instFBDir);
+						available = false;	//set as unavailable
 					}
 					break;
 					case turnRad_inst:
 					{
-						currState = executingInstruction_st;
+						currState = executingInstruction_st;	//advance state
+						//call turn at radius function
+						turnAtRadius(nextInstruction.instLRDir,
+									 nextInstruction.instFBDir,
+									 nextInstruction.instRadius,
+									 nextInstruction.instSpeed,
+									 nextInstruction.instDistance);
+						available = false;	//set as unavailable
 					}
 					break;
 					case turnInPlace_inst:
 					{
-						currState = executingInstruction_st;
+						currState = executingInstruction_st;	//advance state
+						//call turn in place function
+						turnInPlace(nextInstruction.instLRDir,
+									nextInstruction.instDegrees);
+						available = false;	//set as unavailable
 					}
 					break;
 					case gameControl_inst:
@@ -288,9 +347,9 @@ void motorController::tick()
 		{
 			if(instComplete)
 			{
-				stopRobot();
 				currState = getInstruction_st;
-				isAvailable = true;
+				stopRobot();
+				available = true;
 				instRecievedFlag = false;
 				instComplete = false;
 			}
@@ -301,7 +360,7 @@ void motorController::tick()
 			if(!gameControllerFlag)
 			{
 				currState = getInstruction_st;
-				isAvailable = true;
+				available = true;
 				instRecievedFlag = false;
 			}
 		}
@@ -318,8 +377,8 @@ void motorController::tick()
 		break;
 		case executingInstruction_st:
 		{
-			distCheck(); 
-			speedCheck();
+			distCheck();	//check to see if instruction is complete
+			speedCheck();	//check to make sure speed/wheels are correct (PID)
 		}
 		break;
 		case gameController_st:
