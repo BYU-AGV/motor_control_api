@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 #include "motor.h"	//path to motor.h
-#include "encoder.h"		//path to encoders.h
+//#include "encoder.h"		//path to encoders.h
 
 #define MC_SLAVE_ADDRESS 0x00
 
@@ -27,13 +27,13 @@ typedef enum
 	
 }motorController_st_t;
 
-enum
+enum instruction_e
 {
 	straightLine_inst = 0,
 	turnRad_inst = 1,
 	turnInPlace_inst = 2,
 	gameControl_inst = 3
-}instruction_e;
+};
 
 //available instructions (Should do a type with instruction string, parse within)
 typedef struct
@@ -62,7 +62,7 @@ public:
 	void turnInPlace(mc_LRDir_t direction, mc_rotation_t degrees);
 
 	bool isAvailable();		//returns availability of motor controller
-	void getInstruction(instruction_t instructionStr);	//gets instruction from i2c, sets instruction received flag
+	void getInstruction();	//gets instruction from i2c, sets instruction received flag
 	void stopGameController();	//lowers gameController flag
 	void tick();	//standard tick function
 	
@@ -98,8 +98,8 @@ private:
 	
 	//state machine variables/flags
 	motorController_st_t currState, prevState;
-	bool available;
-	bool instComplete;
+	bool availableFlag;	//availability flag
+	bool instCompleteFlag;	//instruction complete flag
 	bool instRecievedFlag;	//indicates if an instruction has been received
 	bool gameControllerFlag;	//indicates if game controller is being used
 	instruction_t nextInstruction;	//instruction to be executed

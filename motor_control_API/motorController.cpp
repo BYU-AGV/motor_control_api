@@ -49,7 +49,7 @@
 #define instToDeg(instVal) (instVal * 360 / 255)
 
 //constructor
-motorController::motorController(motor leftMotor, motor rightMotor, smPeriod) :
+motorController::motorController(motor leftMotor, motor rightMotor, uint16_t smPeriod) :
 			leftMotor(leftMotor), rightMotor(rightMotor),
 			smPeriod(smPeriod),
 			leftTargetSpeed(0),
@@ -58,14 +58,14 @@ motorController::motorController(motor leftMotor, motor rightMotor, smPeriod) :
 			rightDir(FORWARD),
 			targetDistance(0),
 			turnDir(RIGHT),
-			isAvailable(true)
+			availableFlag(true)
 {
 	//setup
 	
 	//init sercom slave for instructions from main controller
 	I2CSlave.initSlaveWIRE(MC_SLAVE_ADDRESS);
 	I2CSlave.prepareAckBitWIRE();
-	SERCOM0.I2CS.CTRLB.bit.SMEN = 1;	//set smart mode, auto ACK on reading of DATA
+	SERCOM0->I2CS.CTRLB.bit.SMEN = 1;	//set smart mode, auto ACK on reading of DATA
 	
 
 	//init master i2c for communication with encoders
@@ -135,7 +135,7 @@ void motorController::turnInPlace(mc_LRDir_t direction, mc_rotation_t degrees)
 }
 
 //used to find if robot is executing a control. If false, robot is free for a command
-inline bool motorController::isAvailable() { return isAvailable; }
+inline bool motorController::isAvailable() { return availableFlag; }
 
 //sets instruction received flag
 void motorController::getInstruction()
@@ -203,9 +203,10 @@ void motorController::speedCheck()
 	if(leftTargetSpeed != getLeftSpeed() ||
 	   rightTargetSpeed != getRightSpeed())
 	{
-		
+		//insert PID implementation here
 	}
 }
+
 //get distance left wheel has traveled from encoders
 mc_distance_t motorController::getLeftDistance()
 {
@@ -227,7 +228,7 @@ inline void motorController::distCheck()
 {
 	if(avg(getLeftDistance(), getRightDistance()) >= targetDistance)
 	{
-		instComplete = true;
+		instCompleteFlag = true;
 	}
 }
 
@@ -294,7 +295,7 @@ void motorController::tick()
 		{
 			currState = getInstruction_st;
 			instRecievedFlag = false;
-			available = true;
+			availableFlag = true;
 		}
 		break;
 		case getInstruction_st:
@@ -310,7 +311,7 @@ void motorController::tick()
 						straightLine(nextInstruction.instSpeed,
 									 nextInstruction.instDistance,
 									 nextInstruction.instFBDir);
-						available = false;	//set as unavailable
+						availableFlag = false;	//set as unavailable
 					}
 					break;
 					case turnRad_inst:
@@ -322,7 +323,7 @@ void motorController::tick()
 									 nextInstruction.instRadius,
 									 nextInstruction.instSpeed,
 									 nextInstruction.instDistance);
-						available = false;	//set as unavailable
+						availableFlag = false;	//set as unavailable
 					}
 					break;
 					case turnInPlace_inst:
@@ -331,7 +332,7 @@ void motorController::tick()
 						//call turn in place function
 						turnInPlace(nextInstruction.instLRDir,
 									nextInstruction.instDegrees);
-						available = false;	//set as unavailable
+						availableFlag = false;	//set as unavailable
 					}
 					break;
 					case gameControl_inst:
@@ -345,13 +346,13 @@ void motorController::tick()
 		break;
 		case executingInstruction_st:
 		{
-			if(instComplete)
+			if(instCompleteFlag)
 			{
 				currState = getInstruction_st;
 				stopRobot();
-				available = true;
+				availableFlag = true;
 				instRecievedFlag = false;
-				instComplete = false;
+				instCompleteFlag = false;
 			}
 		}
 		break;
@@ -360,7 +361,7 @@ void motorController::tick()
 			if(!gameControllerFlag)
 			{
 				currState = getInstruction_st;
-				available = true;
+				availableFlag = true;
 				instRecievedFlag = false;
 			}
 		}
