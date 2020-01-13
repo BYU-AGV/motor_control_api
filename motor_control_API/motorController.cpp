@@ -63,14 +63,14 @@ motorController::motorController(motor leftMotor, motor rightMotor, uint16_t smP
 	//setup
 	
 	//init sercom slave for instructions from main controller
+	SERCOM I2CSlave(SERCOM0);
 	I2CSlave.initSlaveWIRE(MC_SLAVE_ADDRESS);
 	I2CSlave.prepareAckBitWIRE();
 	SERCOM0->I2CS.CTRLB.bit.SMEN = 1;	//set smart mode, auto ACK on reading of DATA
 	
-
 	//init master i2c for communication with encoders
+	SERCOM I2CMaster(SERCOM1);
 	I2CMaster.initMasterWIRE(BAUD_RATE);
-	
 	
 	//game controller for direct control
 	gameController.init();
@@ -146,8 +146,8 @@ void motorController::getInstruction()
 		uint16_t instructionStr = (I2CSlave.readDataWIRE() << INSTRUCTION_GET_SHIFT)
 								+ (I2CSlave.readDataWIRE());
 		//parse first byte for function call, direction, and speed
-		nextInstruction.funcCall = (instructionStr & INSTRUCTION_FUNC_MASK) >> INSTRUCTION_FUNC_SHIFT;
-		nextInstruction.instFBDir = (instructionStr & INSTRUCTION_FB_DIR_MASK) >> INSTRUCTION_DIR_SHIFT;
+		nextInstruction.funcCall = (instruction_e)(instructionStr & INSTRUCTION_FUNC_MASK) >> INSTRUCTION_FUNC_SHIFT;
+		nextInstruction.instFBDir = (mc_FBDir_t) (instructionStr & INSTRUCTION_FB_DIR_MASK) >> INSTRUCTION_DIR_SHIFT;
 		nextInstruction.instSpeed = (instructionStr & INSTRUCTION_SPEED_MASK) >> INSTRUCTION_SPEED_SHIFT;
 		
 		//parse second byte based on function

@@ -88,8 +88,8 @@ private:
 	mc_distance_t targetDistance;	//used to control run time
 	
 	//comm channels
-	SERCOM I2CSlave(SERCOM0);	//for receiving instructions
-	SERCOM I2CMaster(SERCOM1);	//for communication with encoders
+	SERCOM I2CSlave();	//for receiving instructions
+	SERCOM I2CMaster();	//for communication with encoders
 	USBDevice gameController;
 	
 	//directions
