@@ -73,7 +73,7 @@ motorController::motorController(motor leftMotor, motor rightMotor, uint16_t smP
 	I2CMaster.initMasterWIRE(BAUD_RATE);
 	
 	//game controller for direct control
-	gameController.init();
+	//gameController.init();
 	
 	/*
 	uint8_t currInstruction = I2CSlave.readDataWIRE();
@@ -146,8 +146,8 @@ void motorController::getInstruction()
 		uint16_t instructionStr = (I2CSlave.readDataWIRE() << INSTRUCTION_GET_SHIFT)
 								+ (I2CSlave.readDataWIRE());
 		//parse first byte for function call, direction, and speed
-		nextInstruction.funcCall = (instruction_e)(instructionStr & INSTRUCTION_FUNC_MASK) >> INSTRUCTION_FUNC_SHIFT;
-		nextInstruction.instFBDir = (mc_FBDir_t) (instructionStr & INSTRUCTION_FB_DIR_MASK) >> INSTRUCTION_DIR_SHIFT;
+		nextInstruction.funcCall = (instruction_e) ((instructionStr & INSTRUCTION_FUNC_MASK) >> INSTRUCTION_FUNC_SHIFT);
+		nextInstruction.instFBDir = (mc_FBDir_t) ((instructionStr & INSTRUCTION_FB_DIR_MASK) >> INSTRUCTION_DIR_SHIFT);
 		nextInstruction.instSpeed = (instructionStr & INSTRUCTION_SPEED_MASK) >> INSTRUCTION_SPEED_SHIFT;
 		
 		//parse second byte based on function

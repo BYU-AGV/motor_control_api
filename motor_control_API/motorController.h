@@ -90,7 +90,7 @@ private:
 	//comm channels
 	SERCOM I2CSlave();	//for receiving instructions
 	SERCOM I2CMaster();	//for communication with encoders
-	USBDevice gameController;
+	USBDeviceClass gameController;
 	
 	//directions
 	mc_FBDir_t leftDir, rightDir;
