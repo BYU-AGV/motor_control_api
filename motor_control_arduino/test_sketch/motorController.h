@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <Wire.h>
+#include <Sabertooth.h>
 #include "motor.h"	//path to motor.h
 //#include "encoder.h"		//path to encoders.h
 
@@ -73,6 +74,7 @@ private:
 	motor leftMotor;
 	motor rightMotor;
 	void stopRobot();
+  Sabertooth ST;
 	
 	//encoder functions
 	mc_speed_t getLeftSpeed();

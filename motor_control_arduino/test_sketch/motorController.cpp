@@ -60,7 +60,8 @@ motorController::motorController(motor leftMotor, motor rightMotor, uint16_t smP
 			rightDir(FORWARD),
 			targetDistance(0),
 			turnDir(RIGHT),
-			availableFlag(true)
+			availableFlag(true),
+      ST(128)
 {
 	//setup
 	
@@ -76,6 +77,8 @@ motorController::motorController(motor leftMotor, motor rightMotor, uint16_t smP
 	
 	//game controller for direct control
 	//gameController.init();
+  SabertoothTXPinSerial.begin(9600); // 9600 is the default baud rate for Sabertooth packet serial.
+  ST.autobaud();
   
 	/*
 	uint8_t currInstruction = I2CSlave.readDataWIRE();
