@@ -6,6 +6,7 @@
 #define BAUD_RATE 9600
 
 #define MAX_SPEED_FPS 7.333	//5 mph
+#define MAX_TURN_RADIUS 15
 
 //instruction shift
 #define INSTRUCTION_GET_SHIFT 8
@@ -34,7 +35,8 @@
 #define WHEEL_DIAMETER_IN 14		//diameter of the wheels in inches
 
 //scaling factor to use to convert feet per second to PWM value
-#define PWM_FACTOR (255 / MAX_SPEED_FPS)
+#define PWM_FACTOR (127 / MAX_SPEED_FPS)
+#define TURN_FACTOR (127 / MAX_TURN_RADIUS)
 
 //macro for averaging
 #define avg(a, b) ((a + b) / 2)
@@ -104,6 +106,9 @@ void motorController::straightLine(mc_speed_t speed, mc_distance_t distance, mc_
   Serial.println(speed);
   Serial.write("Distance: ");
   Serial.println(distance);
+
+  ST.drive(speed * PWM_FACTOR);
+  ST.turn(0);
   
 	leftTargetSpeed = speed;
 	rightTargetSpeed = speed;
@@ -128,6 +133,8 @@ void motorController::turnAtRadius(mc_LRDir_t LRdir, mc_FBDir_t FBdir,
   Serial.write("Diraction: ");
   Serial.println(LRdir);
 
+  ST.drive(speed * PWM_FACTOR);
+  ST.turn(turnRadius * TURN_FACTOR);
   
 	turnDir = LRdir;
 	leftDir = (rightDir = FBdir);
@@ -147,7 +154,8 @@ void motorController::turnAtRadius(mc_LRDir_t LRdir, mc_FBDir_t FBdir,
 //use degrees=360 to do a little dance
 void motorController::turnInPlace(mc_LRDir_t direction, mc_rotation_t degrees)
 {
-	
+	ST.drive(0);
+	ST.turn((direction == LEFT) ? -64 : 64);
 }
 
 //used to find if robot is executing a control. If false, robot is free for a command
@@ -262,6 +270,8 @@ inline void motorController::distCheck()
 //helper function to stop robot
 void motorController::stopRobot()
 {
+  ST.stop();
+  
 	leftMotor.disable();
 	rightMotor.disable();
 	leftMotor.set_speed(0);

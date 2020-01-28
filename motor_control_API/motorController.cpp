@@ -143,8 +143,11 @@ void motorController::getInstruction()
 	if(I2CSlave->isDataReadyWIRE())
 	{
 		//get 2 bytes
-		uint16_t instructionStr = (I2CSlave->readDataWIRE() << INSTRUCTION_GET_SHIFT)
-								+ (I2CSlave->readDataWIRE());
+		uint8_t byte1 = I2CSlave->readDataWIRE();
+		uint8_t byte2 = I2CSlave->readDataWIRE();
+		
+		uint16_t instructionStr = (byte1 << INSTRUCTION_GET_SHIFT)
+								+ (byte2);
 		//parse first byte for function call, direction, and speed
 		nextInstruction.funcCall = (instruction_e) ((instructionStr & INSTRUCTION_FUNC_MASK) >> INSTRUCTION_FUNC_SHIFT);
 		nextInstruction.instFBDir = (mc_FBDir_t) ((instructionStr & INSTRUCTION_FB_DIR_MASK) >> INSTRUCTION_DIR_SHIFT);
