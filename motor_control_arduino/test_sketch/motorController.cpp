@@ -51,7 +51,7 @@
 #define instToDeg(instVal) (instVal * 360 / 255)
 
 //constructor
-motorController::motorController(motor leftMotor, motor rightMotor, uint16_t smPeriod) :
+motorController::motorController(motor leftMotor, motor rightMotor, Sabertooth* h_bridge, uint16_t smPeriod) :
 			leftMotor(leftMotor), rightMotor(rightMotor),
 			smPeriod(smPeriod),
 			leftTargetSpeed(0),
@@ -61,7 +61,7 @@ motorController::motorController(motor leftMotor, motor rightMotor, uint16_t smP
 			targetDistance(0),
 			turnDir(RIGHT),
 			availableFlag(true),
-      ST(128)
+      ST(h_bridge)
 {
 	//setup
 	
@@ -77,15 +77,21 @@ motorController::motorController(motor leftMotor, motor rightMotor, uint16_t smP
 	
 	//game controller for direct control
 	//gameController.init();
-  SabertoothTXPinSerial.begin(9600); // 9600 is the default baud rate for Sabertooth packet serial.
-  ST.autobaud();
+  
+  //SabertoothTXPinSerial.begin(9600); // 9600 is the default baud rate for Sabertooth packet serial.
+  //ST->autobaud();
+//  ST = h_bridge;
+  //ST->motor(1, 64);
+  //delay(1000);
+  //ST->motor(1, 0);
   
 	/*
 	uint8_t currInstruction = I2CSlave.readDataWIRE();
 	I2CMaster.sendDataMasterWIRE(NEED_SPEED_INST);
 	*/
   //Wire.begin(35);
-	
+
+  Serial.write("MotorController Setup Complete\n\r");
 }
 
 //destructor
@@ -110,8 +116,10 @@ void motorController::straightLine(mc_speed_t speed, mc_distance_t distance, mc_
   Serial.write("Distance: ");
   Serial.println(distance);
 
-  ST.drive(speed * PWM_FACTOR);
-  ST.turn(0);
+  //ST->drive(speed * PWM_FACTOR);
+  //ST->turn(0);
+
+  ST->motor(1, speed * PWM_FACTOR);
   
 	leftTargetSpeed = speed;
 	rightTargetSpeed = speed;
@@ -127,18 +135,18 @@ void motorController::straightLine(mc_speed_t speed, mc_distance_t distance, mc_
 void motorController::turnAtRadius(mc_LRDir_t LRdir, mc_FBDir_t FBdir,
 		mc_distance_t turnRadius, mc_speed_t speed, mc_distance_t distance)
 {
-  Serial.write("Radius turn command - Speed: ");
-  Serial.println(speed);
-  Serial.write("Radius: ");
-  Serial.println(turnRadius);
-  Serial.write("Distance: ");
-  Serial.println(distance);
-  Serial.write("Diraction: ");
-  Serial.println(LRdir);
+  //Serial.write("Radius turn command - Speed: ");
+  //Serial.println(speed);
+  //Serial.write("Radius: ");
+  //Serial.println(turnRadius);
+  //Serial.write("Distance: ");
+  //Serial.println(distance);
+  //Serial.write("Diraction: ");
+  //Serial.println(LRdir);
 
-  ST.drive(speed * PWM_FACTOR);
-  ST.turn(turnRadius * TURN_FACTOR);
-  
+  //ST->drive(speed * PWM_FACTOR);
+  //ST->turn(turnRadius * TURN_FACTOR);
+
 	turnDir = LRdir;
 	leftDir = (rightDir = FBdir);
 	
@@ -157,8 +165,8 @@ void motorController::turnAtRadius(mc_LRDir_t LRdir, mc_FBDir_t FBdir,
 //use degrees=360 to do a little dance
 void motorController::turnInPlace(mc_LRDir_t direction, mc_rotation_t degrees)
 {
-	ST.drive(0);
-	ST.turn((direction == LEFT) ? -64 : 64);
+	//ST->drive(0);
+	//ST->turn((direction == LEFT) ? -64 : 64);
 }
 
 //used to find if robot is executing a control. If false, robot is free for a command
@@ -170,18 +178,27 @@ void motorController::getInstruction()
 	//if(I2CSlave->isDataReadyWIRE())
  if(tempFlag)
 	{
-  tempFlag = false;
+    tempFlag = false;
 		//get 2 bytes
     uint8_t inst1 = Wire.read();
     uint8_t inst2 = Wire.read();
     uint16_t instructionStr = 0;
 
-    Serial.println(inst1);
-    Serial.println(inst2);
+    //Serial.write("Get Instruction Called\n\r");
+    //ST->motor(1, 80);
+    //delay(10000);
+    /*ST->motor(1, 0);
+    delay(10000);
+    ST->motor(1, 80);
+    delay(10000);
+    ST->motor(1, 0);
+    */
+    //Serial.println(inst1);
+    //Serial.println(inst2);
 		instructionStr = (inst1 << INSTRUCTION_GET_SHIFT) + inst2;//(I2CSlave->readDataWIRE() << INSTRUCTION_GET_SHIFT)
 								//+ (I2CSlave->readDataWIRE());
-    Serial.print(instructionStr, BIN);
-    Serial.print("\n\r");
+    //Serial.print(instructionStr, BIN);
+    //Serial.print("\n\r");
     
 		//parse first byte for function call, direction, and speed
 		nextInstruction.funcCall = (instruction_e) ((instructionStr & INSTRUCTION_FUNC_MASK) >> INSTRUCTION_FUNC_SHIFT);
@@ -273,7 +290,7 @@ inline void motorController::distCheck()
 //helper function to stop robot
 void motorController::stopRobot()
 {
-  ST.stop();
+  ST->stop();
   
 	leftMotor.disable();
 	rightMotor.disable();
@@ -293,7 +310,7 @@ void motorController::tick()
 			{
 				if(prevState != currState)
 				{
-					Serial.println("currentState = init_st");
+					//Serial.println("currentState = init_st");
 					prevState = currState;
 				}
 			}
@@ -302,7 +319,7 @@ void motorController::tick()
 			{
 				if(prevState != currState)
 				{
-					Serial.println("currentState = getInstruction_st");
+					//Serial.println("currentState = getInstruction_st");
 					prevState = currState;
 				}
 			}
@@ -311,7 +328,7 @@ void motorController::tick()
 			{
 				if(prevState != currState)
 				{
-					Serial.println("currentState = executingInstruction_st");
+					//Serial.println("currentState = executingInstruction_st");
 					prevState = currState;
 				}
 			}
@@ -320,7 +337,7 @@ void motorController::tick()
 			{
 				if(prevState != currState)
 				{
-					Serial.println("currentState = gameController_st");
+					//Serial.println("currentState = gameController_st");
 					prevState = currState;
 				}
 			}
@@ -342,7 +359,7 @@ void motorController::tick()
 		{
 			if(instRecievedFlag)
 			{
-      instRecievedFlag = false;
+        instRecievedFlag = false;
 				switch(nextInstruction.funcCall)
 				{
 					case straightLine_inst:

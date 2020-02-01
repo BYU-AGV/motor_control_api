@@ -53,7 +53,7 @@ typedef struct
 class motorController
 {
 public:
-	motorController(motor leftMotor, motor rightMotor, uint16_t smPeriod);	//constructor
+	motorController(motor leftMotor, motor rightMotor, Sabertooth* h_bridge, uint16_t smPeriod);	//constructor
 	~motorController();	//destructor
 	
 	const uint16_t smPeriod;	//state machine period
@@ -74,7 +74,7 @@ private:
 	motor leftMotor;
 	motor rightMotor;
 	void stopRobot();
-  Sabertooth ST;
+  Sabertooth* ST;
 	
 	//encoder functions
 	mc_speed_t getLeftSpeed();
