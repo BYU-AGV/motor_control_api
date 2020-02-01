@@ -28,11 +28,32 @@ void setup() {
   
   SabertoothTXPinSerial.begin(9600); // 9600 is the default baud rate for Sabertooth packet serial.
   ST.autobaud();
-  ST.setRamping(120);
-  ST.motor(1, -30);
+  //ST.setRamping(120);
+  
+//  ST.drive(0);
+//  ST.turn(20);
+//  delay(1000);
+//  ST.drive(0);
+//  ST.turn(0);
+//  delay(1000);
+//  ST.drive(0);
+//  ST.turn(-20);
+//  delay(1000);
+//  ST.drive(0);
+//  ST.turn(0);
+//  delay(1000);
+
+  int motorNum = 1;
+  ST.motor(motorNum, -30);
   delay(1000);
-  ST.motor(1, 0);
-  //pinMode(TEST_PIN, OUTPUT);
+  ST.motor(motorNum, 0);
+  delay(1000);
+  motorNum = 2;
+  ST.motor(2, -30);
+  delay(1000);
+  ST.motor(2, 0);
+  delay(1000);
+  
   
 }
 int testVar = 0;

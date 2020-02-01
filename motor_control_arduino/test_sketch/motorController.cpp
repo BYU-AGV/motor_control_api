@@ -3,6 +3,8 @@
 
 #define SM_DEBUG_ON 1	//used to turn debug statements on/off
 
+#define BOTH_MOTORS 1
+
 #define BAUD_RATE 9600
 
 #define MAX_SPEED_FPS 7.333	//5 mph
@@ -35,7 +37,7 @@
 #define WHEEL_DIAMETER_IN 14		//diameter of the wheels in inches
 
 //scaling factor to use to convert feet per second to PWM value
-#define PWM_FACTOR (127 / MAX_SPEED_FPS)
+#define PWM_FACTOR (31 / MAX_SPEED_FPS)
 #define TURN_FACTOR (127 / MAX_TURN_RADIUS)
 
 //macro for averaging
@@ -116,11 +118,19 @@ void motorController::straightLine(mc_speed_t speed, mc_distance_t distance, mc_
   Serial.write("Distance: ");
   Serial.println(distance);
 
-  //ST->drive(speed * PWM_FACTOR);
-  //ST->turn(0);
+  if(BOTH_MOTORS)
+  {
+    ST->drive((direction ? 1 : -1) * speed * PWM_FACTOR);
+    ST->turn(0);
+//    ST->motor(1, (direction ? 1 : -1) * speed * PWM_FACTOR);
+//    ST->motor(2, (direction ? 1 : -1) * speed * PWM_FACTOR);
+  }
+  else
+  {
+    ST->motor(1, (direction ? 1 : -1) * speed * PWM_FACTOR);
+  }
 
-  ST->motor(1, speed * PWM_FACTOR);
-  
+  /*
 	leftTargetSpeed = speed;
 	rightTargetSpeed = speed;
 	targetDistance = distance;
@@ -128,6 +138,7 @@ void motorController::straightLine(mc_speed_t speed, mc_distance_t distance, mc_
 	rightDir = direction;
 	
 	updateMotors();
+ */
 }
 
 //drive robot in an arc of a certain radius for a certain distance
@@ -147,6 +158,7 @@ void motorController::turnAtRadius(mc_LRDir_t LRdir, mc_FBDir_t FBdir,
   //ST->drive(speed * PWM_FACTOR);
   //ST->turn(turnRadius * TURN_FACTOR);
 
+  /*
 	turnDir = LRdir;
 	leftDir = (rightDir = FBdir);
 	
@@ -158,6 +170,7 @@ void motorController::turnAtRadius(mc_LRDir_t LRdir, mc_FBDir_t FBdir,
 	targetDistance = distance;
 	
 	updateMotors();
+ */
 }
 
 //rotate robot in place by a certain number of degrees
