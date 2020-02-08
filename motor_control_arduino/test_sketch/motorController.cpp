@@ -37,14 +37,14 @@
 #define WHEEL_DIAMETER_IN 14		//diameter of the wheels in inches
 
 //scaling factor to use to convert feet per second to PWM value
-#define PWM_FACTOR (31 / MAX_SPEED_FPS)
-#define TURN_FACTOR (127 / MAX_TURN_RADIUS)
+#define LIN_FACTOR 1 //(31 / MAX_SPEED_FPS)
+#define TURN_FACTOR 1 //(127 / MAX_TURN_RADIUS)
 
 //macro for averaging
 #define avg(a, b) ((a + b) / 2)
 
 //macro to convert real speed in feet per second to PWM value
-#define FPStoPWM(speedIn) (speedIn * PWM_FACTOR)
+#define FPStoPWM(speedIn) (speedIn * LIN_FACTOR)
 
 //macro to do the math to convert
 #define velCalc(speedIn, radiusIn) (2 * M_PI * speedIn * radiusIn)
@@ -113,6 +113,7 @@ void motorController::updateMotors()
 //drive robot in a straight line for a certain distance
 void motorController::straightLine(mc_speed_t speed, mc_distance_t distance, mc_FBDir_t direction)
 {
+  /*
   Serial.write("Straight line command - Speed: ");
   Serial.println(speed);
   Serial.write("Distance: ");
@@ -188,13 +189,22 @@ inline bool motorController::isAvailable() { return availableFlag; }
 //sets instruction received flag
 void motorController::getInstruction()
 {
+  targetLinearVelocity = Wire.read();
+  targetAngularVelocity= Wire.read();
+  //Maybe add serial outputs for checking
+  
+  ST->drive(targetLinearVelocity * LIN_FACTOR);
+  ST->turn(targetAngularVelocity * TURN_FACTOR);
+  
+  instRecievedFlag = false;
+  
+    /*
 	//if(I2CSlave->isDataReadyWIRE())
  if(tempFlag)
 	{
     tempFlag = false;
 		//get 2 bytes
-    uint8_t inst1 = Wire.read();
-    uint8_t inst2 = Wire.read();
+    
     uint16_t instructionStr = 0;
 
     //Serial.write("Get Instruction Called\n\r");
@@ -206,6 +216,7 @@ void motorController::getInstruction()
     delay(10000);
     ST->motor(1, 0);
     */
+    /*
     //Serial.println(inst1);
     //Serial.println(inst2);
 		instructionStr = (inst1 << INSTRUCTION_GET_SHIFT) + inst2;//(I2CSlave->readDataWIRE() << INSTRUCTION_GET_SHIFT)
@@ -246,6 +257,7 @@ void motorController::getInstruction()
 		}
 		instRecievedFlag = true;
 	}
+ */
 }
 
 //lowers gameController flag
@@ -370,6 +382,8 @@ void motorController::tick()
 		break;
 		case getInstruction_st:
 		{
+    
+    /*
 			if(instRecievedFlag)
 			{
         instRecievedFlag = false;
@@ -413,10 +427,13 @@ void motorController::tick()
 					break;
 				}
 			}
+     */
 		}
 		break;
 		case executingInstruction_st:
 		{
+      
+    /*
 			if(instCompleteFlag)
 			{
 				currState = getInstruction_st;
@@ -425,6 +442,7 @@ void motorController::tick()
 				instRecievedFlag = false;
 				instCompleteFlag = false;
 			}
+     */
 		}
 		break;
 		case gameController_st:
@@ -445,12 +463,13 @@ void motorController::tick()
 	{
 		case init_st:
 		break;
-		case getInstruction_st: getInstruction();
+		case getInstruction_st: if(instRecievedFlag) getInstruction();
 		break;
 		case executingInstruction_st:
 		{
-			distCheck();	//check to see if instruction is complete
-			speedCheck();	//check to make sure speed/wheels are correct (PID)
+      if(instRecievedFlag) getInstruction();
+			//distCheck();	//check to see if instruction is complete
+			//speedCheck();	//check to make sure speed/wheels are correct (PID)
 		}
 		break;
 		case gameController_st:

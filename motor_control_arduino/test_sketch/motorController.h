@@ -67,7 +67,7 @@ public:
 	void getInstruction();	//gets instruction from i2c, sets instruction received flag
 	void stopGameController();	//lowers gameController flag
 	void tick();	//standard tick function
-  void instReceived() {tempFlag = true;};
+  void instReceived() {instRecievedFlag = true;};
 	
 private:
 	//motors
@@ -90,6 +90,9 @@ private:
 	mc_speed_t leftTargetSpeed,		//used to maintain correct speed
 			   rightTargetSpeed;		//used to maintain correct speed
 	mc_distance_t targetDistance;	//used to control run time
+
+  int8_t targetLinearVelocity;
+  int8_t targetAngularVelocity;
 	
 	//comm channels
 	//SERCOM *I2CSlave;	//for receiving instructions
