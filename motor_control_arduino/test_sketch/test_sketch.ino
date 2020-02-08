@@ -1,5 +1,5 @@
 #include "motorController.h"
-#include "motor.h"
+//#include "motor.h"
 #include <Wire.h>
 #include <Sabertooth.h>
 
@@ -14,9 +14,6 @@
 
 //#define TEST_PIN 2
 
-motor leftMotor(PWM_1, ENA_1, DIR_1, MOTOR_LEFT);
-motor rightMotor(PWM_2, ENA_2, DIR_2, MOTOR_RIGHT);
-
 Sabertooth ST(128);
 motorController Controller(&ST, 100);
 
@@ -29,8 +26,9 @@ void setup() {
   
   SabertoothTXPinSerial.begin(9600); // 9600 is the default baud rate for Sabertooth packet serial.
   ST.autobaud();
-  ST.setRamping((byte) 1000);
-  
+  ST.setRamping(40); // There are three ranges: 1-10 (Fast-Fastest), 11-20 (Slow-Slowest), and 21-80 (Slow-Fast).
+
+  //startup sequence
   ST.drive(0);
   ST.turn(20);
   delay(1000);
@@ -54,8 +52,6 @@ void setup() {
   delay(1000);
   ST.motor(2, 0);
   delay(1000);
-  
-  
 }
 
 int testVar = 0;

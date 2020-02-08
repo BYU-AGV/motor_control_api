@@ -81,15 +81,12 @@ motorController::motorController(Sabertooth* h_bridge, uint16_t smPeriod) :
 //destructor
 motorController::~motorController() {}
 
-//used to find if robot is executing a control. If false, robot is free for a command
-inline bool motorController::isAvailable() { return availableFlag; }
-
 //takes lin and ang velocity, calculates ang vel for each wheel, stores in targetSpeeds struct
 void motorController::inputToTarget(int8_t linearVelocityIn, int8_t angularVelocityIn)
 {
 	//placeholder
-	targetSpeeds.leftSpeed = 20;
-	targetSpeeds.rightSpeed = 20;
+	targetSpeeds.leftSpeed = linearVelocityIn + angularVelocityIn/2;
+	targetSpeeds.rightSpeed = linearVelocityIn - angularVelocityIn/2;
 }
 
 //reads lin and ang vels from i2c, converts to target speeds for each wheel
@@ -108,25 +105,25 @@ void motorController::getInstruction()
 mc_speed_t motorController::getLeftSpeed()
 {
 	//placeholder until encoders are ready
-	return leftTargetSpeed;
+	return targetSpeeds.leftSpeed;
 }
 
 //Gets actual right motor speed from encoders
 mc_speed_t motorController::getRightSpeed()
 {
 	//placeholder until encoders are ready
-	return rightTargetSpeed;
+	return targetSpeeds.rightSpeed;
 }
 
 //verifies that current speed matches desired speed, adjusts if necessary (PID)
 void motorController::PIDfunction()
 {
 	//placeholder, needs implementation
-	mc_speed_t currLeftSpeed = getLeftSpeed();
-	mc_speed_t currRightSpeed = getRightSpeed();
+	//mc_speed_t currLeftSpeed = getLeftSpeed();
+	//mc_speed_t currRightSpeed = getRightSpeed();
 	
-	controlSpeeds.leftSpeed += targetSpeeds.leftSpeed - currLeftSpeed;
-	controlSpeeds.rightSpeed += targetSpeeds.rightSpeed - currRightSpeed;
+	controlSpeeds.leftSpeed = targetSpeeds.leftSpeed;
+	controlSpeeds.rightSpeed = targetSpeeds.rightSpeed;
 }
 
 //get distance left wheel has traveled from encoders
@@ -203,12 +200,13 @@ void motorController::tick()
 		{
 			currState = getInstruction_st;
 			instRecievedFlag = false;
-			availableFlag = true;
+      targetSpeeds.leftSpeed = 0;
+      targetSpeeds.rightSpeed = 0;
 		}
 		break;
 		case getInstruction_st:
 		{
-			if(instRecievedFlag) currState = executingInstruction_st;
+			currState = executingInstruction_st;
 		}
 		break;
 		case executingInstruction_st:
@@ -219,7 +217,6 @@ void motorController::tick()
 		{
 		}
 		break;
-		
 	}
 	
 	//state action
@@ -241,10 +238,5 @@ void motorController::tick()
 		{
 		}
 		break;
-
 	}
-	
 }
-
-
-

@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <Wire.h>
 #include <Sabertooth.h>
-#include "motor.h"	//path to motor.h
+//#include "motor.h"	//path to motor.h
 //#include "encoder.h"		//path to encoders.h
 
 #define MC_SLAVE_ADDRESS 0x00
@@ -44,15 +44,14 @@ public:
 	
 	const uint16_t smPeriod;	//state machine period
 
-	void getInstruction();	//gets instruction from i2c, sets instruction received flag
+	void getInstruction();	//gets instruction from i2c
 	void tick();	//standard tick function
 	void instReceived() { instRecievedFlag = true; }
 	
 private:
 	//motors
-	inputToTarget(int8_t linearVelocityIn, int8_t angularVelocityIn);
+	void inputToTarget(int8_t linearVelocityIn, int8_t angularVelocityIn);
 	motorSpeeds_t targetSpeeds;
-	void instReceived() { instRecievedFlag = true; }
 	void stopRobot();
 	Sabertooth* ST;
 	
