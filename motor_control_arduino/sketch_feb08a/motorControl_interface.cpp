@@ -1,13 +1,18 @@
 #include "motorControl_interface.h"
 
-void motorControl_interface::init(int deviceAddressIn) :
+motorControl_interface::motorControl_interface()
+{
+  
+}
+
+motorControl_interface::motorControl_interface(int deviceAddressIn) :
 	deviceAddress(deviceAddressIn)
 {
-  Wire.begin(); // join i2c bus (address optional for master)
-  Serial.begin(9600);
-  while(!Serial);
-  Serial.write("Setup Complete\n\r");
-  Serial.setTimeout(10000);
+//  Wire.begin(); // join i2c bus (address optional for master)
+//  Serial.begin(9600);
+//  while(!Serial);
+//  Serial.write("Setup Complete\n\r");
+//  Serial.setTimeout(10000);
 }
 
 void motorControl_interface::serialAsk()

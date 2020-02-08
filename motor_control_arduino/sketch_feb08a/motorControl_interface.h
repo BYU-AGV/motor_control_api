@@ -5,15 +5,16 @@
 #include <Wire.h>
 #include <stdint.h>
 
-class motorcontrol_interface
+class motorControl_interface
 {
 public:
-	void init(int deviceAddressIn);
+  motorControl_interface();
+	motorControl_interface(int deviceAddressIn);
 	void sendData(int8_t linearVelocity, int8_t angularVelocity);
 	void serialAsk();
 
 private:
-	static int deviceAddress
-}
+	int deviceAddress;
+};
 
 #endif

@@ -93,7 +93,7 @@ motorController::motorController(motor leftMotor, motor rightMotor, Sabertooth* 
 	*/
   //Wire.begin(35);
 
-  Serial.write("MotorController Setup Complete\n\r");
+  //Serial.write("MotorController Setup Complete\n\r");
 }
 
 //destructor
