@@ -1,0 +1,26 @@
+AGV MotorController testing:
+
+RasbPi	- Use as SW programmer
+	- Use as I2C master to call movement functions
+	- Use as I2C slave to return current speed as if from encoders
+
+Tests:
+- Perfect speed (no PI)
+	forward, straight line
+	backward, straight line
+	forward, loose arc
+	backward, loose arc
+	forward, tight arc
+	backward, tight arc
+	inPlace, left
+	inPlace, right
+- speeding up (reduce speed with PI)
+	same tests
+- slowing down (increase with PI)
+	same tests
+- alternating speeds (random PI correction)
+- interrupting execution with another instruction
+- sending incorrect instructions
+	negative speed
+	negative distance (maybe use neg-pos as forward/backward)
+	negative direction (maybe use neg/pos as left/right)
