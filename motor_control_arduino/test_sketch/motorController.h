@@ -14,11 +14,11 @@
 #define MC_SLAVE_ADDRESS 0x00
 
 //typedefs
-typedef int16_t mc_distance_t; //in feet
-typedef uint8_t mc_speed_t; //in feet per second
-typedef uint16_t mc_rotation_t; //in degrees
-typedef enum { LEFT = 0, RIGHT = 1 } mc_LRDir_t;	// left/right direction
-typedef enum { BACKWARD = 0, FORWARD = 1 } mc_FBDir_t;	// forward/backward direction
+//typedef int16_t mc_distance_t; //in feet
+//typedef uint8_t mc_speed_t; //in feet per second
+//typedef uint16_t mc_rotation_t; //in degrees
+//typedef enum { LEFT = 0, RIGHT = 1 } mc_LRDir_t;	// left/right direction
+//typedef enum { BACKWARD = 0, FORWARD = 1 } mc_FBDir_t;	// forward/backward direction
 
 //state machine states
 typedef enum
@@ -51,10 +51,10 @@ private:
 	Sabertooth* ST;
 	
 	//encoder functions
-	mc_speed_t getLeftSpeed();
-	mc_speed_t getRightSpeed();
-	mc_distance_t getLeftDistance();
-	mc_distance_t getRightDistance();
+//	mc_speed_t getLeftSpeed();
+//	mc_speed_t getRightSpeed();
+//	mc_distance_t getLeftDistance();
+//	mc_distance_t getRightDistance();
 	
 	//PID control
 		//takes target speed of each wheel,
@@ -71,8 +71,8 @@ private:
   
 	
 	//directions
-	mc_FBDir_t leftDir, rightDir;
-	mc_LRDir_t turnDir;
+//	mc_FBDir_t leftDir, rightDir;
+//	mc_LRDir_t turnDir;
 	
 	//state machine variables/flags
 	motorController_st_t currState, prevState;
