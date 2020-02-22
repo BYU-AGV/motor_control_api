@@ -54,9 +54,9 @@
 
 //constructor
 motorController::motorController(Sabertooth* h_bridge, uint16_t smPeriod) :
-			smPeriod(smPeriod),
-			ST(h_bridge)
+			smPeriod(smPeriod)
 {
+  PID_controller(h_bridge);
 	//setup
 	
 	//init sercom slave for instructions from main controller
@@ -118,15 +118,8 @@ mc_speed_t motorController::getRightSpeed()
 //verifies that current speed matches desired speed, changes motor speeds if necesary
 void motorController::PIDfunction()
 {
-	//placeholder, needs implementation
-	//mc_speed_t currLeftSpeed = getLeftSpeed();
-	//mc_speed_t currRightSpeed = getRightSpeed();
-	
-	controlSpeeds.leftSpeed = targetSpeeds.leftSpeed;
-	controlSpeeds.rightSpeed = targetSpeeds.rightSpeed;
- 
-  ST->motor(1, controlSpeeds.rightSpeed);
-  ST->motor(2, controlSpeeds.leftSpeed);
+  //calls control function of PID controller with target speeds
+  PID_controller.PID_ctrl(targetSpeeds);
 }
 
 //get distance left wheel has traveled from encoders
