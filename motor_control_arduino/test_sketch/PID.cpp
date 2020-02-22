@@ -1,13 +1,13 @@
 #include "PID.h"
-//#include "encoders.h"
+
 
 #define MOTOR_L 1
 #define MOTOR_R 2
 
 PID::PID(Sabertooth* STIn) :
-	ST(STIn)
+	ST(STIn), speedEncoders()
 {
-	
+	//speedEncoders();
 }
 
 //PID control function, changes motor speeds as necessary 
@@ -34,5 +34,3 @@ void PID::PID_ctrl(motorSpeeds_t angVel_ctrl)
 	ST->motor(MOTOR_L, returnCtrl.leftSpeed * km);
 	ST->motor(MOTOR_R, returnCtrl.rightSpeed * km);
 }
-
-

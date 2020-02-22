@@ -2,6 +2,7 @@
 #define PID_H
 
 #include <Sabertooth.h>
+#include "encoders.h"
 
 //gain and conversion values
 #define KP_VALUE 1	//proportional control gain
@@ -18,7 +19,7 @@ class PID
 {
 public:
 	PID(Sabertooth* STIn);
-	int PID_ctrl(motorSpeeds_t angVel_ctrl);
+	void PID_ctrl(motorSpeeds_t angVel_ctrl);
 	
 private:
 	Sabertooth* ST;
@@ -28,6 +29,6 @@ private:
 	static const int km = KM_VALUE;	//conversion from return speed to h-bridge value
 	int error_r_delay = 0, error_l_delay = 0;
 	int angVel_r_delay = 0, angVel_l_delay = 0;
-}
+};
 
 #endif
