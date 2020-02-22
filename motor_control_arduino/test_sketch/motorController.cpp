@@ -115,7 +115,7 @@ mc_speed_t motorController::getRightSpeed()
 	return targetSpeeds.rightSpeed;
 }
 
-//verifies that current speed matches desired speed, adjusts if necessary (PID)
+//verifies that current speed matches desired speed, changes motor speeds if necesary
 void motorController::PIDfunction()
 {
 	//placeholder, needs implementation
@@ -124,6 +124,9 @@ void motorController::PIDfunction()
 	
 	controlSpeeds.leftSpeed = targetSpeeds.leftSpeed;
 	controlSpeeds.rightSpeed = targetSpeeds.rightSpeed;
+ 
+  ST->motor(1, controlSpeeds.rightSpeed);
+  ST->motor(2, controlSpeeds.leftSpeed);
 }
 
 //get distance left wheel has traveled from encoders
@@ -229,9 +232,7 @@ void motorController::tick()
 		case executingInstruction_st:
 		{
 			if(instRecievedFlag) getInstruction();	//if theres a new instruction
-			PIDfunction();	//do PID
-			ST->motor(1, controlSpeeds.rightSpeed);
-			ST->motor(2, controlSpeeds.leftSpeed);
+			PIDfunction();	//do PID, update motors
 		}
 		break;
 		case gameController_st:

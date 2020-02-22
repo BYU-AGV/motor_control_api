@@ -71,6 +71,5 @@ void receiveEvent(int howMany)
 {
   //Serial.write("I got something\n\r");
   Controller.instReceived();
-  
   Controller.getInstruction();
 }

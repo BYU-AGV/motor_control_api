@@ -51,7 +51,7 @@ public:
 private:
 	//motors
 	void inputToTarget(int8_t linearVelocityIn, int8_t angularVelocityIn);
-	motorSpeeds_t targetSpeeds;
+	motorSpeeds_t targetSpeeds; //target angular velocity for each wheel
 	void stopRobot();
 	Sabertooth* ST;
 	
