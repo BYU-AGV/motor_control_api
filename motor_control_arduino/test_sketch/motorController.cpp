@@ -52,6 +52,12 @@
 //macro to convert from 255 instruction to 360 degree value
 #define instToDeg(instVal) (instVal * 360 / 255)
 
+
+typedef union int32_buffer {
+  int32_t value;
+  uint8_t buffer[4];  
+}int32_buffer;
+
 //constructor
 motorController::motorController(Sabertooth* h_bridge, uint16_t smPeriod) :
 			smPeriod(smPeriod), PID_controller(h_bridge)
@@ -76,13 +82,36 @@ targetSpeeds.rightSpeed = linearVelocityIn - ((angularVelocityIn > 0) ? (angular
 //reads lin and ang vels from i2c, converts to target speeds for each wheel
 void motorController::getInstruction()
 {
-  int8_t targetLinearVelocity = Wire.read();
-  int8_t targetAngularVelocity = Wire.read();
+//  int8_t targetLinearVelocity = Wire.read();
+//  int8_t targetAngularVelocity = Wire.read();
+//  
+//  //converts from lin and ang to angular for each wheel, stores in targetSpeeds struct
+//  inputToTarget(targetLinearVelocity, targetAngularVelocity);
+//  
+//  instRecievedFlag = false;	//lower instRecievedFlag
+
+  int32_buffer linear_buff;
+  int32_buffer angular_buff;
+
+  Wire.read();
+  linear_buff.buffer[0]= Wire.read();
+  linear_buff.buffer[1]= Wire.read();
+  linear_buff.buffer[2]= Wire.read();
+  linear_buff.buffer[3]= Wire.read();
+
+  angular_buff.buffer[0]= Wire.read();
+  angular_buff.buffer[1]= Wire.read();
+  angular_buff.buffer[2]= Wire.read();
+  angular_buff.buffer[3]= Wire.read();
+
+  int8_t targetLinearVelocity = map(linear_buff.value, -32272, 32272, -128, 127);
+  int8_t targetAngularVelocity = map(angular_buff.value, -32272, 32272, -128, 127);
   
   //converts from lin and ang to angular for each wheel, stores in targetSpeeds struct
   inputToTarget(targetLinearVelocity, targetAngularVelocity);
   
-  instRecievedFlag = false;	//lower instRecievedFlag
+  instRecievedFlag = false;  //lower instRecievedFlag
+  
 }
 
 //verifies that current speed matches desired speed, changes motor speeds if necesary
