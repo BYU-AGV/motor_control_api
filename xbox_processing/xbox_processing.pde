@@ -10,7 +10,8 @@ static int centerPoint = 128;
 
 ControlDevice cont;
 ControlIO control;
-float thumb;
+float rightThumb;
+float leftThumb;
 
 void setup() {
   size(360, 200);
@@ -31,17 +32,24 @@ void setup() {
 void draw() {
   if ( arduino.available() > 0) {  // If data is available,
   serVal = arduino.readStringUntil('\n');  // read it and store it in serVal
-  } 
+  }
   println(serVal);
   getUserInput();
-  background(thumb,100,255);
-  arduino.write((int)thumb);
-  text((int)thumb, 10, 30); 
+  background(leftThumb,100,255);
+  arduino.write((int)leftThumb);
+  arduino.write((int)rightThumb);
+  text((int)leftThumb, 10, 30); 
+  text((int)rightThumb, 90, 30); 
 }
 
 public void getUserInput() {
-  thumb = map(cont.getSlider("throttle").getValue(), -1, 1, 1, 255);
-  if (abs(thumb - centerPoint) <= centerPrecision) {
-    thumb = centerPoint;
+  leftThumb = map(cont.getSlider("throttle").getValue(), -1, 1, -128, 128);
+  if (abs(leftThumb - centerPoint) <= centerPrecision) {
+    leftThumb = centerPoint;
+  }
+  
+  rightThumb = map(cont.getSlider("steering").getValue(), -1, 1, -128, 128);
+  if (abs(rightThumb - centerPoint) <= centerPrecision) {
+    rightThumb = centerPoint;
   }
 }
