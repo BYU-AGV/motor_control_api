@@ -10,6 +10,16 @@ PID::PID(Sabertooth* STIn) :
   
 }
 
+inline void PID::leftEncoderInterrupt()
+{
+  leftEncoder.trigger_cnt();
+}
+
+inline void rightEncoderInterrupt()
+{
+  rightEncoder.trigger_cnt();
+}
+  
 //PID control function, changes motor speeds as necessary 
 void PID::PID_ctrl(motorSpeeds_t angVel_ctrl)
 {

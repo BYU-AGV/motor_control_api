@@ -20,6 +20,8 @@ class PID
 public:
 	PID(Sabertooth* STIn);
 	void PID_ctrl(motorSpeeds_t angVel_ctrl);
+  void leftEncoderInterrupt();
+  void rightEncoderInterrupt();
 	
 private:
 	Sabertooth* ST;

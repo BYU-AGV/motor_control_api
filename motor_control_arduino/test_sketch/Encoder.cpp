@@ -18,7 +18,7 @@ uint16_t Encoder::get_speed() {
 	}
 	
 	// this should return an approximation of the speed
-	return TIME_CONSTANT / (second_to_last_tick_time - last_tick_time)
+	return TIME_CONSTANT / (second_to_last_tick_time - last_tick_time);
 }
 
 // interrupt function. this should be attached to the interrupt encoder pin via a wrapper in main
