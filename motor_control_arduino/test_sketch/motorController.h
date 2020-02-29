@@ -43,6 +43,14 @@ public:
 	void tick();	//standard tick function
 	void instReceived() { instRecievedFlag = true; }
 	
+	// encoder wrappers
+	void encoderleftWrapper() {
+		PID_controller.leftEncoderInterrupt()
+	}
+
+	void encoderRightWrapper() {
+		PID_controller.rightEncoderInterrupt()
+	}
 private:
 	//motors
 	void inputToTarget(int8_t linearVelocityIn, int8_t angularVelocityIn);
