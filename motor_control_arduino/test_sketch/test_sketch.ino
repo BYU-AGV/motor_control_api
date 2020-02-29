@@ -18,12 +18,13 @@
 
 //#define TEST_PIN 2
 
+// wrappers for the encoder class
 void enc_right_trigger() {
-	encoder_r.trigger_cnt();
+	motorController.encoderRightWrapper();
 }
 
 void enc_left_trigger() {
-	encoder_l.trigger_cnt();
+	motorController.encoderleftWrapper();
 }
 
 Sabertooth ST(128);
@@ -35,7 +36,14 @@ void setup() {
   if(DEBUG_ON) Serial.write("\n\rsetup complete\n\r");
   Wire.begin(35);
   Wire.onReceive(receiveEvent);
-  
+
+  // Encoder setup -- unfortunately, the way Ardiuno implements interrupts, this can only be done in main.
+  //  it can't be done inside the encoder class. we also need the enc_*_trigger wrappers. :/
+  pinMode(INTERRUPT_PIN_R, INPUT_PULLUP);
+  pinMode(INTERRUPT_PIN_L, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN_R), enc_right_trigger, RISING);
+  attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN_L), enc_left_trigger, RISING);
+
   SabertoothTXPinSerial.begin(9600); // 9600 is the default baud rate for Sabertooth packet serial.
   ST.autobaud();
   ST.setRamping(40); // There are three ranges: 1-10 (Fast-Fastest), 11-20 (Slow-Slowest), and 21-80 (Slow-Fast).
@@ -68,20 +76,20 @@ void setup() {
 
 int testVar = 0;
 void loop() {
-  // put your main code here, to run repeatedly:
-//check for instructions
-    Controller.tick();
+	// put your main code here, to run repeatedly:
+	//check for instructions
+	Controller.tick();
 
-    //for testing
-    //digitalWrite(TEST_PIN, 1);
-    delay(100);
-    //digitalWrite(TEST_PIN, 0);
-    delay(100);
+	//for testing
+	//digitalWrite(TEST_PIN, 1);
+	delay(100);
+	//digitalWrite(TEST_PIN, 0);
+	delay(100);
 }
 
 void receiveEvent(int howMany)
 {
-  //Serial.write("I got something\n\r");
-  Controller.instReceived();
-  Controller.getInstruction();
+	//Serial.write("I got something\n\r");
+	Controller.instReceived();
+	Controller.getInstruction();
 }
