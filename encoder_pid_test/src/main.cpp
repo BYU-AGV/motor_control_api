@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <stdint.h>
 #include "Servo.h"
+#include "Encoder.h"
 
 #define PRINT // comment this line to disable printing to serial
 
@@ -17,8 +18,13 @@
 #define ANGLE 10 // angle between each slot (in degrees)
 #define THETA (ANGLE*SHORT_PI)/180 // angle between each slot (in radians)
 
+#define INTERRUPT_PIN_R 2
+#define INTERRUPT_PIN_L 3
 const byte interruptPin_R = 2; //pin where the encoder is (goes HIGH or LOW)
 const byte interruptPin_L = 3;
+
+Encoder encoder_l;
+Encoder encoder_r;
 
 //static bool initial_read;
 //static bool trig;
@@ -90,17 +96,30 @@ void initialize() //INITIALIZE variables
 	lin_speed_L = 0.0;
 }
 
+
+
+void enc_right_trigger() {
+	encoder_r.trigger_cnt();
+}
+
+void enc_left_trigger() {
+	encoder_l.trigger_cnt();
+}
+
 void setup() {
 	Serial.begin(BAUD_RATE);
 	while (!Serial)
 		;  // wait for serial to begin
 
+	// Encoder setup -- unfortunately, the way Ardiuno implements interrupts, this can only be done in main.
+	//  it can't be done inside the encoder class. we also need the enc_*_trigger wrappers. :/
+	encoder_l = Encoder();
+	encoder_r = Encoder();
+    pinMode(INTERRUPT_PIN_R, INPUT_PULLUP);
+    pinMode(INTERRUPT_PIN_L, INPUT_PULLUP);
+    attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN_R), enc_right_trigger, RISING);
+    attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN_L), enc_left_trigger, RISING);
 
-	// Encoder setup
-	pinMode(interruptPin_R, INPUT_PULLUP);
-	pinMode(interruptPin_L, INPUT_PULLUP);
-	attachInterrupt(digitalPinToInterrupt(interruptPin_R), trigger_R, RISING);
-	attachInterrupt(digitalPinToInterrupt(interruptPin_L), trigger_L, RISING);
 	initialize();
 
 	delay(500);
@@ -151,12 +170,6 @@ void increment_interrupt_counter() {
         time_diff = abs( millis() - inter_time );
         lin_speed_R = (right_cnt << 9) / time_diff;
 
-/*
-        Serial.print(millis());
-        Serial.print(' ');
-        Serial.println(inter_time);
-        */
-
         Serial.print(time_diff);
         Serial.print(' ');
         Serial.print(right_cnt);
@@ -171,7 +184,7 @@ void increment_interrupt_counter() {
 
 void loop() {
 
-	vel_cnt++;
+	vel_cnt++; // this is just to cycle through different velocities
 	if (vel_cnt >= MAX_VEL_CNT) {
 		vel_cnt = 0;
 		increment_current_vel_index();
@@ -183,6 +196,7 @@ void loop() {
 
     increment_interrupt_counter();
 
+// the following code will be replaced by the PID controller
 	count++;
 	if (count >= 100) {
 		count = 0;
