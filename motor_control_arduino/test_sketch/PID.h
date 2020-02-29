@@ -2,7 +2,7 @@
 #define PID_H
 
 #include <Sabertooth.h>
-#include "Encoders.h"
+#include "Encoder.h"
 
 //gain and conversion values
 #define KP_VALUE 1	//proportional control gain

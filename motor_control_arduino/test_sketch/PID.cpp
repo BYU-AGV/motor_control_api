@@ -13,8 +13,8 @@ PID::PID(Sabertooth* STIn) :
 //PID control function, changes motor speeds as necessary 
 void PID::PID_ctrl(motorSpeeds_t angVel_ctrl)
 {
-	int angVel_r_curr = rightEncoder.getSpeed();
-	int angVel_l_curr = leftEncoder.getSpeed();
+	int angVel_r_curr = rightEncoder.get_speed();
+	int angVel_l_curr = leftEncoder.get_speed();
 	
 	// compute the error
 	double error_r = angVel_ctrl.rightSpeed - angVel_r_curr;
