@@ -58,23 +58,6 @@ motorController::motorController(Sabertooth* h_bridge, uint16_t smPeriod) :
 {
 	//setup
 	
-	//init sercom slave for instructions from main controller
-	//I2CSlave = new SERCOM(SERCOM0);
-	//I2CSlave->initSlaveWIRE(MC_SLAVE_ADDRESS);
-	//I2CSlave->prepareAckBitWIRE();
-	//SERCOM0->I2CS.CTRLB.bit.SMEN = 1;	//set smart mode, auto ACK on reading of DATA
-	
-	//init master i2c for communication with encoders								may be unnecesary
-	//I2CMaster = new SERCOM(SERCOM1);
-	//I2CMaster->initMasterWIRE(BAUD_RATE);
-  
-	/*
-	uint8_t currInstruction = I2CSlave.readDataWIRE();
-	I2CMaster.sendDataMasterWIRE(NEED_SPEED_INST);
-	*/
-  //Wire.begin(35);
-
-  //Serial.write("MotorController Setup Complete\n\r");
 }
 
 //destructor
@@ -100,45 +83,11 @@ void motorController::getInstruction()
   instRecievedFlag = false;	//lower instRecievedFlag
 }
 
-////Gets actual left motor speed from encoders
-//mc_speed_t motorController::getLeftSpeed()
-//{
-//	//placeholder until encoders are ready
-//	return targetSpeeds.leftSpeed;
-//}
-//
-////Gets actual right motor speed from encoders
-//mc_speed_t motorController::getRightSpeed()
-//{
-//	//placeholder until encoders are ready
-//	return targetSpeeds.rightSpeed;
-//}
-
 //verifies that current speed matches desired speed, changes motor speeds if necesary
 void motorController::PIDfunction()
 {
   //calls control function of PID controller with target speeds
   PID_controller.PID_ctrl(targetSpeeds);
-}
-
-////get distance left wheel has traveled from encoders
-//mc_distance_t motorController::getLeftDistance()
-//{
-//	//placeholder until encoders are ready
-//	return 0;
-//}
-//
-////get distance right wheel has traveled from encoders
-//mc_distance_t motorController::getRightDistance()
-//{
-//	//placeholder until encoders are ready
-//	return 0;
-//}
-
-//helper function to stop robot
-void motorController::stopRobot()
-{
-	ST->stop();
 }
 
 //standard state machine tick function
@@ -223,7 +172,7 @@ void motorController::tick()
 		break;
 		case executingInstruction_st:
 		{
-			if(instRecievedFlag) getInstruction();	//if theres a new instruction
+			if(instRecievedFlag) getInstruction();	//if theres a new instruction, get it
 			PIDfunction();	//do PID, update motors
 		}
 		break;
