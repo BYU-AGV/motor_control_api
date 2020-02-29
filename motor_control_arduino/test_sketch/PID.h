@@ -2,7 +2,7 @@
 #define PID_H
 
 #include <Sabertooth.h>
-#include "encoders.h"
+#include "Encoders.h"
 
 //gain and conversion values
 #define KP_VALUE 1	//proportional control gain
@@ -23,7 +23,8 @@ public:
 	
 private:
 	Sabertooth* ST;
-	encoders speedEncoders;
+	Encoder leftEncoder;
+  Encoder rightEncoder;
 	static const int kp = KP_VALUE;	//proportional control gain
 	static const int ki = KI_VALUE;	//integral control gain
 	static const int km = KM_VALUE;	//conversion from return speed to h-bridge value

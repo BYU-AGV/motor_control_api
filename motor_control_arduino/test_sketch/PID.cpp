@@ -5,16 +5,16 @@
 #define MOTOR_R 2
 
 PID::PID(Sabertooth* STIn) :
-	ST(STIn), speedEncoders()
+	ST(STIn)
 {
-	//speedEncoders();
+  
 }
 
 //PID control function, changes motor speeds as necessary 
 void PID::PID_ctrl(motorSpeeds_t angVel_ctrl)
 {
-	int angVel_r_curr = speedEncoders.getRight();
-	int angVel_l_curr = speedEncoders.getLeft();
+	int angVel_r_curr = rightEncoder.getSpeed();
+	int angVel_l_curr = leftEncoder.getSpeed();
 	
 	// compute the error
 	double error_r = angVel_ctrl.rightSpeed - angVel_r_curr;
