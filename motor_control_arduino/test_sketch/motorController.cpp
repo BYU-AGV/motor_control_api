@@ -33,8 +33,8 @@
 #define INSTRUCTION_IN_PLACE_DEG_SHIFT 0
 
 //robot dimensions
-#define ROBOT_TRACK_WIDTH_IN		//distance from center of one wheel to the other in inches
-#define WHEEL_DIAMETER_IN 14		//diameter of the wheels in inches
+#define ROBOT_TRACK_WIDTH_IN 32		//distance from center of one wheel to the other in inches
+#define WHEEL_RADIUS_IN 14		//diameter of the wheels in inches
 
 //scaling factor to use to convert feet per second to PWM value
 #define LIN_FACTOR 1 //(31 / MAX_SPEED_FPS)
@@ -66,9 +66,11 @@ motorController::~motorController() {}
 //takes lin and ang velocity, calculates ang vel for each wheel, stores in targetSpeeds struct
 void motorController::inputToTarget(int8_t linearVelocityIn, int8_t angularVelocityIn)
 {
-	//placeholder
-	targetSpeeds.leftSpeed = linearVelocityIn + angularVelocityIn/2;
-	targetSpeeds.rightSpeed = linearVelocityIn - angularVelocityIn/2;
+//	targetSpeeds.leftSpeed = (linearVelocityIn + linVelAdj)/WHEEL_RADIUS_IN;
+//	targetSpeeds.rightSpeed = (linearVelocityIn - linVelAdj)/WHEEL_RADIUS_IN;
+
+targetSpeeds.leftSpeed = linearVelocityIn - ((angularVelocityIn < 0) ? (angularVelocityIn * 2): 0);
+targetSpeeds.rightSpeed = linearVelocityIn - ((angularVelocityIn > 0) ? (angularVelocityIn * 2): 0);
 }
 
 //reads lin and ang vels from i2c, converts to target speeds for each wheel
