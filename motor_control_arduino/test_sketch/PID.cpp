@@ -7,29 +7,30 @@
 PID::PID(Sabertooth* STIn) :
 	ST(STIn)
 {
-  
+	leftEncoder = Encoder();
+	rightEncoder = Encoder();
 }
 
 inline void PID::leftEncoderInterrupt()
 {
-  leftEncoder.trigger_cnt();
+	leftEncoder.trigger_cnt();
 }
 
 inline void rightEncoderInterrupt()
 {
-  rightEncoder.trigger_cnt();
+	rightEncoder.trigger_cnt();
 }
-  
+
 //PID control function, changes motor speeds as necessary 
 void PID::PID_ctrl(motorSpeeds_t angVel_ctrl)
 {
 	int angVel_r_curr = rightEncoder.get_speed();
 	int angVel_l_curr = leftEncoder.get_speed();
-	
+
 	// compute the error
 	double error_r = angVel_ctrl.rightSpeed - angVel_r_curr;
 	double error_l = angVel_ctrl.leftSpeed - angVel_l_curr;
-	
+
 	// update delayed variables for next time through the loop
 	error_r_delay = error_r;
 	error_l_delay = error_l;
@@ -40,7 +41,7 @@ void PID::PID_ctrl(motorSpeeds_t angVel_ctrl)
 	motorSpeeds_t returnCtrl;
 	returnCtrl.rightSpeed = kp * error_r;
 	returnCtrl.leftSpeed = kp * error_l;
-	
+
 	ST->motor(MOTOR_L, returnCtrl.leftSpeed * km);
 	ST->motor(MOTOR_R, returnCtrl.rightSpeed * km);
 }

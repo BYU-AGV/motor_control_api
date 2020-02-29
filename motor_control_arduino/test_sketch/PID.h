@@ -17,21 +17,23 @@ typedef struct{
 
 class PID
 {
-public:
-	PID(Sabertooth* STIn);
-	void PID_ctrl(motorSpeeds_t angVel_ctrl);
-  void leftEncoderInterrupt();
-  void rightEncoderInterrupt();
-	
-private:
-	Sabertooth* ST;
-	Encoder leftEncoder;
-  Encoder rightEncoder;
-	static const int kp = KP_VALUE;	//proportional control gain
-	static const int ki = KI_VALUE;	//integral control gain
-	static const int km = KM_VALUE;	//conversion from return speed to h-bridge value
-	int error_r_delay = 0, error_l_delay = 0;
-	int angVel_r_delay = 0, angVel_l_delay = 0;
+	public:
+		PID(Sabertooth* STIn);
+		void PID_ctrl(motorSpeeds_t angVel_ctrl);
+
+		// wrappers for encoder interrupts
+		void leftEncoderInterrupt();
+		void rightEncoderInterrupt();
+
+	private:
+		Sabertooth* ST;
+		Encoder leftEncoder;
+		Encoder rightEncoder;
+		static const int kp = KP_VALUE;	//proportional control gain
+		static const int ki = KI_VALUE;	//integral control gain
+		static const int km = KM_VALUE;	//conversion from return speed to h-bridge value
+		int error_r_delay = 0, error_l_delay = 0;
+		int angVel_r_delay = 0, angVel_l_delay = 0;
 };
 
 #endif

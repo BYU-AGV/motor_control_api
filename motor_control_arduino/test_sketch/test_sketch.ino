@@ -12,7 +12,19 @@
 #define DIR_1 8
 #define DIR_2 9
 
+// encoder interrupt pins
+#define INTERRUPT_PIN_R 2
+#define INTERRUPT_PIN_L 3
+
 //#define TEST_PIN 2
+
+void enc_right_trigger() {
+	encoder_r.trigger_cnt();
+}
+
+void enc_left_trigger() {
+	encoder_l.trigger_cnt();
+}
 
 Sabertooth ST(128);
 motorController Controller(&ST, 100);
