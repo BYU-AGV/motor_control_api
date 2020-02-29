@@ -54,8 +54,7 @@
 
 //constructor
 motorController::motorController(Sabertooth* h_bridge, uint16_t smPeriod) :
-			smPeriod(smPeriod),
-			ST(h_bridge)
+			smPeriod(smPeriod), PID_controller(h_bridge)
 {
 	//setup
 	
@@ -101,47 +100,40 @@ void motorController::getInstruction()
   instRecievedFlag = false;	//lower instRecievedFlag
 }
 
-//Gets actual left motor speed from encoders
-mc_speed_t motorController::getLeftSpeed()
-{
-	//placeholder until encoders are ready
-	return targetSpeeds.leftSpeed;
-}
-
-//Gets actual right motor speed from encoders
-mc_speed_t motorController::getRightSpeed()
-{
-	//placeholder until encoders are ready
-	return targetSpeeds.rightSpeed;
-}
+////Gets actual left motor speed from encoders
+//mc_speed_t motorController::getLeftSpeed()
+//{
+//	//placeholder until encoders are ready
+//	return targetSpeeds.leftSpeed;
+//}
+//
+////Gets actual right motor speed from encoders
+//mc_speed_t motorController::getRightSpeed()
+//{
+//	//placeholder until encoders are ready
+//	return targetSpeeds.rightSpeed;
+//}
 
 //verifies that current speed matches desired speed, changes motor speeds if necesary
 void motorController::PIDfunction()
 {
-	//placeholder, needs implementation
-	//mc_speed_t currLeftSpeed = getLeftSpeed();
-	//mc_speed_t currRightSpeed = getRightSpeed();
-	
-	controlSpeeds.leftSpeed = targetSpeeds.leftSpeed;
-	controlSpeeds.rightSpeed = targetSpeeds.rightSpeed;
- 
-  ST->motor(1, controlSpeeds.rightSpeed);
-  ST->motor(2, controlSpeeds.leftSpeed);
+  //calls control function of PID controller with target speeds
+  PID_controller.PID_ctrl(targetSpeeds);
 }
 
-//get distance left wheel has traveled from encoders
-mc_distance_t motorController::getLeftDistance()
-{
-	//placeholder until encoders are ready
-	return 0;
-}
-
-//get distance right wheel has traveled from encoders
-mc_distance_t motorController::getRightDistance()
-{
-	//placeholder until encoders are ready
-	return 0;
-}
+////get distance left wheel has traveled from encoders
+//mc_distance_t motorController::getLeftDistance()
+//{
+//	//placeholder until encoders are ready
+//	return 0;
+//}
+//
+////get distance right wheel has traveled from encoders
+//mc_distance_t motorController::getRightDistance()
+//{
+//	//placeholder until encoders are ready
+//	return 0;
+//}
 
 //helper function to stop robot
 void motorController::stopRobot()
