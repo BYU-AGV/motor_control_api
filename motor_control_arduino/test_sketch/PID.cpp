@@ -11,12 +11,12 @@ PID::PID(Sabertooth* STIn) :
 	rightEncoder = Encoder();
 }
 
-inline void PID::leftEncoderInterrupt()
+void PID::leftEncoderInterrupt()
 {
 	leftEncoder.trigger_cnt();
 }
 
-inline void rightEncoderInterrupt()
+void PID::rightEncoderInterrupt()
 {
 	rightEncoder.trigger_cnt();
 }

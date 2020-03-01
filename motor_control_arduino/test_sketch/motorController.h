@@ -8,8 +8,6 @@
 #include <Wire.h>
 #include <Sabertooth.h>
 #include "PID.h"
-//#include "motor.h"	//path to motor.h, don't really need
-//#include "encoder.h"		//path to encoders.h, should be included in PID
 
 #define MC_SLAVE_ADDRESS 0x00
 
@@ -44,13 +42,10 @@ public:
 	void instReceived() { instRecievedFlag = true; }
 	
 	// encoder wrappers
-	void encoderleftWrapper() {
-		PID_controller.leftEncoderInterrupt()
-	}
+	void encoderleftWrapper();
 
-	void encoderRightWrapper() {
-		PID_controller.rightEncoderInterrupt()
-	}
+	void encoderRightWrapper();
+ 
 private:
 	//motors
 	void inputToTarget(int8_t linearVelocityIn, int8_t angularVelocityIn);

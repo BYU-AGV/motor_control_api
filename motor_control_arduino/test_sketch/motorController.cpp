@@ -69,6 +69,14 @@ motorController::motorController(Sabertooth* h_bridge, uint16_t smPeriod) :
 //destructor
 motorController::~motorController() {}
 
+void motorController::encoderleftWrapper() {
+  PID_controller.leftEncoderInterrupt();
+}
+
+void motorController::encoderRightWrapper() {
+  PID_controller.rightEncoderInterrupt();
+}
+
 //takes lin and ang velocity, calculates ang vel for each wheel, stores in targetSpeeds struct
 void motorController::inputToTarget(int8_t linearVelocityIn, int8_t angularVelocityIn)
 {
@@ -104,8 +112,16 @@ void motorController::getInstruction()
   angular_buff.buffer[2]= Wire.read();
   angular_buff.buffer[3]= Wire.read();
 
-  int8_t targetLinearVelocity = map(linear_buff.value, -32272, 32272, -128, 127);
-  int8_t targetAngularVelocity = map(angular_buff.value, -32272, 32272, -128, 127);
+  while(Wire.available()) {Wire.read();}
+  
+  Serial.println(linear_buff.value);
+  Serial.println(angular_buff.value);
+  
+  int8_t targetLinearVelocity = map(linear_buff.value, -32767, 32767, -125, 125);
+  int8_t targetAngularVelocity = map(angular_buff.value, -32767, 32767, -125, 125);
+
+  Serial.println(targetLinearVelocity);
+  Serial.println(targetAngularVelocity);
   
   //converts from lin and ang to angular for each wheel, stores in targetSpeeds struct
   inputToTarget(targetLinearVelocity, targetAngularVelocity);
