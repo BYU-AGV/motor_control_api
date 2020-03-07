@@ -112,7 +112,7 @@ void motorController::getInstruction()
   angular_buff.buffer[2]= Wire.read();
   angular_buff.buffer[3]= Wire.read();
 
-  while(Wire.available()) {Wire.read();}
+  while(Wire.available()) {Wire.read();}  //clear incoming buffer
   
   Serial.println(linear_buff.value);
   Serial.println(angular_buff.value);
