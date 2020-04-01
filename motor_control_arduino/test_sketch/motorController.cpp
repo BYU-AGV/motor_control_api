@@ -83,8 +83,8 @@ void motorController::inputToTarget(int8_t linearVelocityIn, int8_t angularVeloc
 //	targetSpeeds.leftSpeed = (linearVelocityIn + linVelAdj)/WHEEL_RADIUS_IN;
 //	targetSpeeds.rightSpeed = (linearVelocityIn - linVelAdj)/WHEEL_RADIUS_IN;
 
-targetSpeeds.leftSpeed = linearVelocityIn - ((angularVelocityIn < 0) ? (angularVelocityIn * 2): 0);
-targetSpeeds.rightSpeed = linearVelocityIn - ((angularVelocityIn > 0) ? (angularVelocityIn * 2): 0);
+  targetSpeeds.leftSpeed = linearVelocityIn - ((angularVelocityIn < 0) ? abs(angularVelocityIn): 0);
+  targetSpeeds.rightSpeed = linearVelocityIn - ((angularVelocityIn > 0) ? abs(angularVelocityIn): 0);
 }
 
 //reads lin and ang vels from i2c, converts to target speeds for each wheel
@@ -114,14 +114,14 @@ void motorController::getInstruction()
 
   while(Wire.available()) {Wire.read();}  //clear incoming buffer
   
-  Serial.println(linear_buff.value);
-  Serial.println(angular_buff.value);
-  
-  int8_t targetLinearVelocity = map(linear_buff.value, -32767, 32767, -125, 125);
-  int8_t targetAngularVelocity = map(angular_buff.value, -32767, 32767, -125, 125);
+//  Serial.println(linear_buff.value);
+//  Serial.println(angular_buff.value);
 
-  Serial.println(targetLinearVelocity);
-  Serial.println(targetAngularVelocity);
+  int8_t targetLinearVelocity = map(linear_buff.value, -32768, 32768, -125, 125);
+  int8_t targetAngularVelocity = map(angular_buff.value, -32768, 32768, -125, 125);
+
+//  Serial.println(targetLinearVelocity);
+//  Serial.println(targetAngularVelocity);
   
   //converts from lin and ang to angular for each wheel, stores in targetSpeeds struct
   inputToTarget(targetLinearVelocity, targetAngularVelocity);
